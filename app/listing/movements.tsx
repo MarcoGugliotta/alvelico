@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement } from '@/models/Models';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import formatTimestampToString from '@/hooks/utils';
+import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 
 const Pages = () => {
   const { level } = useLocalSearchParams<{ level: string }>();
@@ -43,11 +43,18 @@ const Pages = () => {
             <Link href={{ pathname: "/listing/submovements", params: { movement: movement.label }}} >
                 <Text>{movement.label}{movement.subMovements ? ' >' : ''}</Text>
             </Link>
+            <Text>Dettagli del movimento:</Text>
             <View style={{ marginLeft: 20 }}>
-                <Text>Dettagli del movimento:</Text>
-                <Text>- Data Attivazione: {movement.activationDate ? formatTimestampToString(movement.activationDate) : 'Non disponibile'}</Text>
+              <Text>- Data Attivazione: {movement.activationDate ? formatTimestampToString(movement.activationDate) : '--/--/----'}</Text>
+              <Text>- Data Completamento: {movement.completionDate ? formatTimestampToString(movement.completionDate) : '--/--/----'}</Text>
+            </View>
+            {movement.subMovements && (
+              <View style={{ marginLeft: 20 }}>
                 <Text>- Percentuale Progresso: {movement.completionPercentage}</Text>
-                </View>
+                <Text>- Sequenze completate: {countCompletedItems(movement.subMovements)}/{movement.subMovements.length}</Text>
+                <Text>- Sequenze in progress: {countInProgressItems(movement.subMovements)}/{movement.subMovements.length}</Text>
+              </View>
+            )}
           </View>
         ))
       ) : (

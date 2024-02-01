@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
-import { getDocs, query, collection, doc, Timestamp } from 'firebase/firestore';
+import { getDocs, collection } from 'firebase/firestore';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Level } from '@/models/Models';
 import { Link } from 'expo-router';
-import formatTimestampToString from '@/hooks/utils';
+import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 
 export default function TabCarrieraScreen() {
   const [levels, setLevels] = useState<Level[] | null>(null);
@@ -60,10 +60,13 @@ export default function TabCarrieraScreen() {
               {/* Visualizza i dettagli del livello se disponibili */}
               {level.movements && (
                 <View style={{ marginLeft: 20 }}>
-                <Text>Dettagli del livello:</Text>
-                <Text>- Data Attivazione: {level.activationDate ? formatTimestampToString(level.activationDate) : 'Non disponibile'}</Text>
-                <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
-              </View>
+                  <Text>Dettagli del livello:</Text>
+                  <Text>- Data Attivazione: {level.activationDate ? formatTimestampToString(level.activationDate) : '--/--/----'}</Text>
+                  <Text>- Data Completamento: {level.completionDate ? formatTimestampToString(level.completionDate) : '--/--/----'}</Text>
+                  <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
+                  <Text>- Movimenti completati: {countCompletedItems(level.movements)}/{level.movements.length}</Text>
+                  <Text>- Movimenti in progress: {countInProgressItems(level.movements)}/{level.movements.length}</Text>
+                </View>
               )}
             </View>
           ))}
