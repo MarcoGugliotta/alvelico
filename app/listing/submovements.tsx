@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Level, SubMovement } from '@/models/Models';
+import { formatTimestampToString, countCompletedItems, countInProgressItems } from '@/hooks/utils';
 
 const Pages = () => {
   const { movement } = useLocalSearchParams<{ movement: string }>();
@@ -41,15 +42,27 @@ const Pages = () => {
 
   return (
     <View>
-      <Text>Sottomovimenti per il movimento {movement}</Text>
+      <Text>Sequenze per il movimento {movement}</Text>
       {subMovements.length > 0 ? (
         subMovements.map((subMovement, index) => (
           <View key={index}>
               <Link href={{ pathname: "/listing/subsubmovements", params: { movement: movement, subMovement: subMovement.label }}} >
                 <Text>{subMovement.label}{subMovement.subSubMovements ? ' >' : ''}</Text>
               </Link>
+              <Text>Dettagli della sequenza:</Text>
+              <View style={{ marginLeft: 20 }}>
+                <Text>- Data Attivazione: {subMovement.activationDate ? formatTimestampToString(subMovement.activationDate) : '--/--/----'}</Text>
+                <Text>- Data Completamento: {subMovement.completionDate ? formatTimestampToString(subMovement.completionDate) : '--/--/----'}</Text>
+              </View>
+              {subMovement.subSubMovements && (
+                <View style={{ marginLeft: 20 }}>
+                  <Text>- Percentuale Progresso: {subMovement.completionPercentage}</Text>
+                  <Text>- Sotto Sequenze completate: {countCompletedItems(subMovement.subSubMovements)}/{subMovement.subSubMovements.length}</Text>
+                  <Text>- Sotto Sequenze in progress: {countInProgressItems(subMovement.subSubMovements)}/{subMovement.subSubMovements.length}</Text>
+                </View>
+              )}
           </View>
-        ))
+            ))
       ) : (
         <Text>Nessun sottomovimento trovato per questo movimento.</Text>
       )}

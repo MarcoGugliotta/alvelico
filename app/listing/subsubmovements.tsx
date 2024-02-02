@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import { Level, SubSubMovement } from '@/models/Models';
+import { formatTimestampToString } from '@/hooks/utils';
 
 const Pages = () => {
   const { movement, subMovement } = useLocalSearchParams<{ movement: string, subMovement: string }>();
@@ -48,11 +49,16 @@ const Pages = () => {
 
   return (
     <View>
-      <Text>Sottosottomovimenti per il movimento {movement}</Text>
+      <Text>Sotto sequenze per la sequenza {subMovement}</Text>
       {subSubMovements.length > 0 ? (
         subSubMovements.map((subSubMovement, index) => (
           <View key={index}>
             <Text>{subSubMovement.label}</Text>
+            <Text>Dettaglio della sotto sequenza:</Text>
+              <View style={{ marginLeft: 20 }}>
+                <Text>- Data Attivazione: {subSubMovement.activationDate ? formatTimestampToString(subSubMovement.activationDate) : '--/--/----'}</Text>
+                <Text>- Data Completamento: {subSubMovement.completionDate ? formatTimestampToString(subSubMovement.completionDate) : '--/--/----'}</Text>
+              </View>
           </View>
         ))
       ) : (
