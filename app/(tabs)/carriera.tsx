@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, onSnapshot, setDoc, doc, Timestamp } from 'firebase/firestore';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Level } from '@/models/Models';
+import { Level, Movement } from '@/models/Models';
 import { Link } from 'expo-router';
 import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
+import { Constants } from '@/constants/Strings';
 
 export default function TabCarrieraScreen() {
   const [levels, setLevels] = useState<Level[] | null>(null);
@@ -16,38 +17,77 @@ export default function TabCarrieraScreen() {
     const fetchUserCareerData = async () => {
       try {
         setLoading(true);
-        const q = collection(FIREBASE_DB, "users", FIREBASE_AUTH.currentUser!.uid, "career");
-        const querySnapshot = await getDocs(q);
-        const levelsDoc: Level[] = [];
-        querySnapshot.forEach((doc) => {
-          const levelData = doc.data() as Level;
-          levelsDoc.push(levelData);
+        const q = collection(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career);
+        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+          const levelsDoc: Level[] = [];
+          querySnapshot.forEach((doc) => {
+            
+            const levelData = doc.data() as Level;
+            levelsDoc.push(levelData);
+          });
+          // Ordina i livelli in base al progressivo
+          levelsDoc.sort((a, b) => a.progressive - b.progressive);
+          // Array di Promise per le chiamate asincrone a getDocs
+          const promises = levelsDoc.map(async (level) => {
+            const levelLabel: string = level.label === "Principiante" ? "beginner" :  level.label === "Intermedio" ? "intermediate" : level.label === "Avanzato" ? "advanced" : '';
+            const movementsIntRef = collection(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, levelLabel, Constants.Movements);
+            const querySnapshotM = await getDocs(movementsIntRef);
+            level.movements = [];
+            querySnapshotM.forEach((doc) => {
+              const movementsData = doc.data() as Movement;
+              level.movements.push(movementsData);
+            });
+            if (level.movements) {
+              level.movements.sort((a, b) => a.progressive - b.progressive);
+              level.movements.forEach((movement) => {
+                if (movement.subMovements) {
+                  movement.subMovements.sort((a, b) => a.progressive - b.progressive);
+                  movement.subMovements.forEach((subMovement) => {
+                    if (subMovement.subSubMovements) {
+                      subMovement.subSubMovements.sort((a, b) => a.progressive - b.progressive);
+                    }
+                  });
+                }
+              });
+            }
+          });
+          // Aspetta che tutte le chiamate asincrone siano complete prima di impostare i livelli
+          await Promise.all(promises);
+          setLevels(levelsDoc);
         });
-        // Ordina i livelli in base al progressivo
-        levelsDoc.sort((a, b) => a.progressive - b.progressive);
-        // Ordina i movimenti all'interno di ciascun livello in base al progressivo
-        levelsDoc.forEach((level) => {
-          if (level.movements) {
-            level.movements.sort((a, b) => a.progressive - b.progressive);
-          }
-        });
-        setLevels(levelsDoc);
-
-        // Salva i dati dell'utente nello storage locale
-        await AsyncStorage.setItem('userData', JSON.stringify(levelsDoc));
+        return () => unsubscribe();
       } catch (error) {
         console.error('Errore durante il recupero dei dati della carriera dell\'utente:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUserCareerData();
-  }, []);
+  }, [levels]);
 
-  const activateDate = (label:string) => {
+  async function activateMovement(movement: Movement, level: Level) {
+    try {
+        // Crea un timestamp corrente
+        const timestamp = Timestamp.now();
 
-  }
+        // Aggiungi la data di attivazione al movimento
+        movement!.activationDate = timestamp;
+
+        // Ottienie il riferimento al documento del movimento nel database
+        const levelLabel: string = level.label === "Principiante" ? "beginner" :  level.label === "Intermedio" ? "intermediate" : level.label === "Avanzato" ? "advanced" : '';
+            
+        const movementRef = doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid!, Constants.Career, levelLabel, Constants.Movements, movement.id!);
+
+        // Aggiorna il documento del movimento nel database con la nuova data di attivazione
+        const { subMovements, ...movementWithoutSubMovements } = movement;
+        await setDoc(movementRef, movementWithoutSubMovements);
+
+        console.log('Movimento attivato con successo.');
+    } catch (error) {
+        console.error('Errore durante l\'attivazione del movimento:', error);
+    }
+}
 
   return (
     <ScrollView style={styles.container}>
@@ -70,14 +110,7 @@ export default function TabCarrieraScreen() {
                   <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
                   <Text>- Movimenti completati: {countCompletedItems(level.movements)}/{level.movements.length}</Text>
                   <Text>- Movimenti in progress: {countInProgressItems(level.movements)}/{level.movements.length}</Text>
-                  {level.movements.map((movement, idx) => (
-                    <View key={idx}>
-                      <Button
-                        title={`Attiva data per "${movement.label}"`}
-                        onPress={() => activateDate(movement.label)}
-                      />
-                    </View>
-                  ))}
+                  <Button title="Attiva Movimento" onPress={() => activateMovement(level.movements[0], level)} />
                 </View>
               )}
             </View>

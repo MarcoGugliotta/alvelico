@@ -1,20 +1,10 @@
 import { collection, addDoc, doc, setDoc, Timestamp, CollectionReference, DocumentReference } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig'; 
 import { User } from 'firebase/auth';
-
-
-enum Constants {
-    Beginner = 'beginner',
-    Intermediate = 'intermediate',
-    Advanced = 'advanced',
-    Users = 'users',
-    Career = 'career',
-    Movements = 'movements',
-    SubMovements = 'subMovements',
-    SubSubMovements = 'subSubMovements'
-}
+import { Constants } from '@/constants/Strings';
 
 interface Level {
+    id: string;
     label: string;
     activationDate: Date | null;
     completionDate: Date | null;
@@ -24,6 +14,7 @@ interface Level {
 }
 
 interface Movement {
+    id: string;
     label: string;
     difficulty: number;
     status: string;
@@ -35,6 +26,7 @@ interface Movement {
 }
 
 interface SubMovement {
+    id: string;
     label: string;
     difficulty: number;
     status: string;
@@ -46,6 +38,7 @@ interface SubMovement {
 }
 
 interface SubSubMovement {
+    id: string;
     label: string;
     difficulty: number;
     status: string;
@@ -96,6 +89,8 @@ const addLevels = async (userId: string) => {
             completionPercentage: beginnerLevel.completionPercentage,
             progressive: beginnerLevel.progressive
         });
+        beginnerLevel.id = beginnerRef.id;
+        await setDoc(beginnerRef, beginnerLevel);
     
         const intermediateRef = doc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), Constants.Intermediate);
         await setDoc(intermediateRef, {
@@ -105,6 +100,8 @@ const addLevels = async (userId: string) => {
             completionPercentage: intermediateLevel.completionPercentage,
             progressive: intermediateLevel.progressive
         });
+        intermediateLevel.id = intermediateRef.id;
+        await setDoc(intermediateRef, intermediateLevel);
     
         const advancedRef = doc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), Constants.Advanced);
         await setDoc(advancedRef, {
@@ -114,6 +111,8 @@ const addLevels = async (userId: string) => {
             completionPercentage: advancedLevel.completionPercentage,
             progressive: advancedLevel.progressive
         });
+        advancedLevel.id = advancedRef.id;
+        await setDoc(advancedRef, advancedLevel);
         console.log('Raccolta di levels aggiunta con successo.');
     }catch(err){
         console.error('Errore durante l\'aggiunta dei levels:', err);
@@ -143,9 +142,11 @@ const addMovement = async (userId: string, movement: Movement, movementsRef: Col
         // Clona l'oggetto movement escludendo la proprietà subMovements
         const { subMovements, ...movementWithoutSubMovements } = movement;
         const movementDocRef = await addDoc(movementsRef, movementWithoutSubMovements);
+        movement.id = movementDocRef.id;
+        await setDoc(movementDocRef, movement);
 
-        if (movement.subMovements && movement.subMovements.length > 0) {
-            await addSubMovements(userId, movement.subMovements, movementDocRef, level);
+        if (subMovements) {
+            await addSubMovements(userId, subMovements, movementDocRef, level);
         }
 
         console.log('Raccolta di movimenti aggiunta con successo.');
@@ -166,6 +167,9 @@ const addSubMovement = async (userId: string, subMovement: SubMovement, movement
         // Clona l'oggetto subMovement escludendo la proprietà subSubMovements
         const { subSubMovements, ...subMovementWithoutSubSubMovements } = subMovement;
         const subMovementDocRef = await addDoc(subMovementsRef, subMovementWithoutSubSubMovements);
+        subMovement.id = subMovementDocRef.id;
+        await setDoc(subMovementDocRef, subMovement);
+
         if (subSubMovements) {
             await addSubSubMovements(userId, subSubMovements, movementDocRef, subMovementsRef, subMovementDocRef, level);
         }
@@ -185,7 +189,9 @@ const addSubSubMovements = async (userId: string, subSubMovements: SubSubMovemen
 
 const addSubSubMovement = async (subSubMovement: SubSubMovement, subSubMovementsRef: CollectionReference) => {
     try {
-        await addDoc(subSubMovementsRef, subSubMovement);
+        const subSubMovementDocRef = await addDoc(subSubMovementsRef, subSubMovement);
+        subSubMovement.id = subSubMovementDocRef.id;
+        await setDoc(subSubMovementDocRef, subSubMovement);
         console.log('Raccolta di sotto-sotto movimenti aggiunta con successo.');
     } catch (error) {
         console.error('Errore durante l\'aggiunta della raccolta di sotto-sotto movimenti:', error);
@@ -194,41 +200,44 @@ const addSubSubMovement = async (subSubMovement: SubSubMovement, subSubMovements
 
 
 const beginnerLevel: Level = {
+    id: '', 
     label: 'Principiante',
     activationDate: null,
     completionDate: null,
     completionPercentage: 0,
     movements: [
-        { label: 'Trasporto della Tavola', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-        { label: 'Partenza', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-        { label: 'Rotazione di Prua', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 },
-        { label: 'Rotazione di Poppa', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 4 },
-        { label: 'Orzare', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 5 },
-        { label: 'Puggiare', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 6 },
-        { label: 'Navigare in Sicurezza', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 7 },
-        { label: 'Andatura di Bolina', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 8 },
-        { label: 'Andatura di Traverso', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 9 },
-        { label: 'Andatura di Lasco', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 10 },
-        { label: 'Andatura di Poppa', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 11 },
-        { label: 'Virata Semplice', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 12 },
-        { label: 'Strambata Semplice', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 13 }
+        { id: '', label: 'Trasporto della Tavola', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+        { id: '', label: 'Partenza', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+        { id: '',  label: 'Rotazione di Prua', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 },
+        { id: '',  label: 'Rotazione di Poppa', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 4 },
+        { id: '',  label: 'Orzare', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 5 },
+        { id: '',  label: 'Puggiare', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 6 },
+        { id: '',  label: 'Navigare in Sicurezza', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 7 },
+        { id: '',  label: 'Andatura di Bolina', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 8 },
+        { id: '',  label: 'Andatura di Traverso', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 9 },
+        { id: '',  label: 'Andatura di Lasco', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 10 },
+        { id: '',  label: 'Andatura di Poppa', difficulty: 2, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 11 },
+        { id: '',  label: 'Virata Semplice', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 12 },
+        { id: '',  label: 'Strambata Semplice', difficulty: 3, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 13 }
     ],
     progressive: 1
 };
 
 const intermediateLevel: Level = {
+    id: '', 
     label: 'Intermedio',
     activationDate: null,
     completionDate: null,
     completionPercentage: 0,
     movements: [
-        { label: 'Evitare le Catapulte', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-        { label: 'Evitare lo Spin Out', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-        { label: 'Partenza dalla Spiaggia Trapezio', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 },
-        { label: 'Strambata Pivot', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 4 },
-        { label: 'Trapezio', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 5 },
-        { label: 'Virata Veloce', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 6 },
+        { id: '', label: 'Evitare le Catapulte', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+        { id: '', label: 'Evitare lo Spin Out', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+        { id: '', label: 'Partenza dalla Spiaggia Trapezio', difficulty: 4, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 },
+        { id: '', label: 'Strambata Pivot', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 4 },
+        { id: '', label: 'Trapezio', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 5 },
+        { id: '', label: 'Virata Veloce', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 6 },
         {
+            id: '', 
             label: 'Planare',
             difficulty: 7,
             status: '',
@@ -237,23 +246,24 @@ const intermediateLevel: Level = {
             completionPercentage: 0,
             progressive: 7,
             subMovements: [
-                { label: 'Entrare in Planata', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                { label: 'Mantenere la Planata', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-                { label: 'Pompare', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3, 
+                { id: '', label: 'Entrare in Planata', difficulty: 6, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                { id: '', label: 'Mantenere la Planata', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+                { id: '', label: 'Pompare', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3, 
                     subSubMovements: [
-                        { label: 'Pompare agganciati al Trapezio', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                        { label: 'Pompare sulla Pinna', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-                        { label: 'Pompa e Saltella', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
+                        { id: '', label: 'Pompare agganciati al Trapezio', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                        { id: '', label: 'Pompare sulla Pinna', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+                        { id: '', label: 'Pompa e Saltella', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
                     ] 
                 },
                 {
+                    id: '', 
                     label: 'Curvare', difficulty: 7, status: '', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 8,
                     subSubMovements: [
-                        { label: 'Carving', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                        { label: 'Girare con Imbardata', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 }
+                        { id: '', label: 'Carving', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                        { id: '', label: 'Girare con Imbardata', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 }
                     ]
                 },
-                { label: 'Piedi negli Strap', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 9 }
+                { id: '', label: 'Piedi negli Strap', difficulty: 5, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 9 }
             ]
         },
         
@@ -262,13 +272,15 @@ const intermediateLevel: Level = {
 };
 
 const advancedLevel: Level = {
+    id: '', 
     label: 'Avanzato',
     activationDate: null,
     completionDate: null,
     completionPercentage: 0,
     movements: [
-        { label: 'Partenza dall’Acqua', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+        { id: '', label: 'Partenza dall’Acqua', difficulty: 7, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
         {
+            id: '', 
             label: 'Virata Power',
             difficulty: 8,
             status: '',
@@ -277,12 +289,13 @@ const advancedLevel: Level = {
             completionPercentage: 0,
             progressive: 2,
             subMovements: [
-                { label: 'Ingresso', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                { label: 'Rotazione', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-                { label: 'Uscita', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
+                { id: '', label: 'Ingresso', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                { id: '', label: 'Rotazione', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+                { id: '', label: 'Uscita', difficulty: 8, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
             ]
         },
         {
+            id: '', 
             label: 'Power Jibe',
             difficulty: 9,
             status: '',
@@ -291,12 +304,13 @@ const advancedLevel: Level = {
             completionPercentage: 0,
             progressive: 3,
             subMovements: [
-                { label: 'Ingresso', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                { label: 'Transizione', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-                { label: 'Uscita', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
+                { id: '', label: 'Ingresso', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                { id: '', label: 'Transizione', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+                { id: '', label: 'Uscita', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
             ]
         },
         {
+            id: '', 
             label: 'Chop Hop',
             difficulty: 9,
             status: '',
@@ -305,9 +319,9 @@ const advancedLevel: Level = {
             completionPercentage: 0,
             progressive: 4,
             subMovements: [
-                { label: 'Take off', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
-                { label: 'Tempo di Permanenza', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
-                { label: 'Atterraggio', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
+                { id: '', label: 'Take off', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 1 },
+                { id: '', label: 'Tempo di Permanenza', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 2 },
+                { id: '', label: 'Atterraggio', difficulty: 9, status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, progressive: 3 }
             ]
         }
     ],
