@@ -1,6 +1,18 @@
-import { collection, addDoc, doc, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, Timestamp, CollectionReference, DocumentReference } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig'; 
 import { User } from 'firebase/auth';
+
+
+enum Constants {
+    Beginner = 'beginner',
+    Intermediate = 'intermediate',
+    Advanced = 'advanced',
+    Users = 'users',
+    Career = 'career',
+    Movements = 'movements',
+    SubMovements = 'subMovements',
+    SubSubMovements = 'subSubMovements'
+}
 
 interface Level {
     label: string;
@@ -49,7 +61,7 @@ export default async function createCareerForUser(user: User, name: string, last
     try {
         const userId = auth.currentUser!.uid;
 
-        await setDoc(doc(FIREBASE_DB, 'users', userId), {
+        await setDoc(doc(FIREBASE_DB, Constants.Users, userId), {
             userName: '',
             name: name,
             lastname: lastname,
@@ -58,6 +70,8 @@ export default async function createCareerForUser(user: User, name: string, last
         });
 
         await addLevels(userId);
+
+        await addMovements(userId);
 
         // Aggiungi un documento alla collezione leaderboard
         await addDoc(collection(FIREBASE_DB, 'leaderboard'), {
@@ -73,35 +87,109 @@ export default async function createCareerForUser(user: User, name: string, last
 };
 
 const addLevels = async (userId: string) => {
-    const beginnerRef = doc(collection(FIREBASE_DB, 'users', userId, 'career'), 'beginner');
-    await setDoc(beginnerRef, {
-        label: 'Principiante',
-        activationDate: null,
-        completionDate: null,
-        completionPercentage: 0,
-        movements: beginnerLevel.movements,
-        progressive: beginnerLevel.progressive
-    });
+    try{
+        const beginnerRef = doc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), Constants.Beginner);
+        await setDoc(beginnerRef, {
+            label: beginnerLevel.label,
+            activationDate: beginnerLevel.activationDate,
+            completionDate: beginnerLevel.completionDate,
+            completionPercentage: beginnerLevel.completionPercentage,
+            progressive: beginnerLevel.progressive
+        });
+    
+        const intermediateRef = doc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), Constants.Intermediate);
+        await setDoc(intermediateRef, {
+            label: intermediateLevel.label,
+            activationDate: intermediateLevel.activationDate,
+            completionDate: intermediateLevel.completionDate,
+            completionPercentage: intermediateLevel.completionPercentage,
+            progressive: intermediateLevel.progressive
+        });
+    
+        const advancedRef = doc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), Constants.Advanced);
+        await setDoc(advancedRef, {
+            label: advancedLevel.label,
+            activationDate: advancedLevel.activationDate,
+            completionDate: advancedLevel.completionDate,
+            completionPercentage: advancedLevel.completionPercentage,
+            progressive: advancedLevel.progressive
+        });
+        console.log('Raccolta di levels aggiunta con successo.');
+    }catch(err){
+        console.error('Errore durante l\'aggiunta dei levels:', err);
+    }
+};
 
-    const intermediateRef = doc(collection(FIREBASE_DB, 'users', userId, 'career'), 'intermediate');
-    await setDoc(intermediateRef, {
-        label: 'Intermedio',
-        activationDate: null,
-        completionDate: null,
-        completionPercentage: 0,
-        movements: intermediateLevel.movements,
-        progressive: intermediateLevel.progressive
-    });
+const addMovements = async (userId: string) => {
+    const movementsBegRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, Constants.Beginner, Constants.Movements);
+    beginnerLevel.movements.forEach(async (movement) => {
+        await addMovement(userId, movement, movementsBegRef, Constants.Beginner);
+    })
 
-    const advancedRef = doc(collection(FIREBASE_DB, 'users', userId, 'career'), 'advanced');
-    await setDoc(advancedRef, {
-        label: 'Avanzato',
-        activationDate: null,
-        completionDate: null,
-        completionPercentage: 0,
-        movements: advancedLevel.movements,
-        progressive: advancedLevel.progressive
+
+    const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, Constants.Intermediate, Constants.Movements);
+    intermediateLevel.movements.forEach(async (movement) => {
+        await addMovement(userId, movement, movementsIntRef, Constants.Intermediate);
+    })
+    
+    const movementsAdvRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, Constants.Advanced, Constants.Movements);
+    advancedLevel.movements.forEach(async (movement) => {
+        await addMovement(userId, movement, movementsAdvRef, Constants.Advanced);
+    })
+}
+
+const addMovement = async (userId: string, movement: Movement, movementsRef: CollectionReference, level: Constants) => {
+    try {
+        // Clona l'oggetto movement escludendo la proprietà subMovements
+        const { subMovements, ...movementWithoutSubMovements } = movement;
+        const movementDocRef = await addDoc(movementsRef, movementWithoutSubMovements);
+
+        if (movement.subMovements && movement.subMovements.length > 0) {
+            await addSubMovements(userId, movement.subMovements, movementDocRef, level);
+        }
+
+        console.log('Raccolta di movimenti aggiunta con successo.');
+    } catch (error) {
+        console.error('Errore durante l\'aggiunta della raccolta di movimenti:', error);
+    }
+};
+
+const addSubMovements = async (userId: string, subMovements: SubMovement[], movementDocRef: DocumentReference, level: Constants) => {
+    const subMovementsRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, level, Constants.Movements, movementDocRef.id, Constants.SubMovements);
+    subMovements.forEach(async (subMovement) => {
+        await addSubMovement(userId, subMovement, movementDocRef, subMovementsRef, level);
     });
+};
+
+const addSubMovement = async (userId: string, subMovement: SubMovement, movementDocRef: DocumentReference, subMovementsRef: CollectionReference, level: Constants) => {
+    try {
+        // Clona l'oggetto subMovement escludendo la proprietà subSubMovements
+        const { subSubMovements, ...subMovementWithoutSubSubMovements } = subMovement;
+        const subMovementDocRef = await addDoc(subMovementsRef, subMovementWithoutSubSubMovements);
+        if (subSubMovements) {
+            await addSubSubMovements(userId, subSubMovements, movementDocRef, subMovementsRef, subMovementDocRef, level);
+        }
+
+        console.log('Raccolta di sotto movimenti aggiunta con successo.');
+    } catch (error) {
+        console.error('Errore durante l\'aggiunta della raccolta di sotto movimenti:', error);
+    }
+};
+
+const addSubSubMovements = async (userId: string, subSubMovements: SubSubMovement[], movementDocRef: DocumentReference, subMovementsRef: CollectionReference, subMovementDocRef: DocumentReference, level: Constants) => {
+    const subSubMovementsRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, level, Constants.Movements, movementDocRef.id, Constants.SubMovements, subMovementDocRef.id, Constants.SubSubMovements);
+    subSubMovements.forEach(async (subSubMovement) => {
+        await addSubSubMovement(subSubMovement, subSubMovementsRef);
+    });
+};
+
+const addSubSubMovement = async (subSubMovement: SubSubMovement, subSubMovementsRef: CollectionReference) => {
+    try {
+        await addDoc(subSubMovementsRef, subSubMovement);
+        console.log('Raccolta di sotto-sotto movimenti aggiunta con successo.');
+    } catch (error) {
+        console.error('Errore durante l\'aggiunta della raccolta di sotto-sotto movimenti:', error);
+    }
 };
 
 

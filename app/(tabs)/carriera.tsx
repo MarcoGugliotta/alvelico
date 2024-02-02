@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
 import { getDocs, collection } from 'firebase/firestore';
@@ -45,6 +45,10 @@ export default function TabCarrieraScreen() {
     fetchUserCareerData();
   }, []);
 
+  const activateDate = (label:string) => {
+
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Carriera</Text>
@@ -66,6 +70,14 @@ export default function TabCarrieraScreen() {
                   <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
                   <Text>- Movimenti completati: {countCompletedItems(level.movements)}/{level.movements.length}</Text>
                   <Text>- Movimenti in progress: {countInProgressItems(level.movements)}/{level.movements.length}</Text>
+                  {level.movements.map((movement, idx) => (
+                    <View key={idx}>
+                      <Button
+                        title={`Attiva data per "${movement.label}"`}
+                        onPress={() => activateDate(movement.label)}
+                      />
+                    </View>
+                  ))}
                 </View>
               )}
             </View>
