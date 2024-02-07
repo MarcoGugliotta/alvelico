@@ -120,4 +120,31 @@ class SubSubMovement {
   }
 }
 
-export { Level, Movement, SubMovement, SubSubMovement };
+
+class User {
+  id?: string;
+  avatarUrl: string;
+  email: string;
+  lastname: string;
+  name: string;
+  userName: string;
+
+  constructor(
+      id?: string,
+      avatarUrl?: string,
+      email?: string,
+      lastname?: string,
+      name?: string,
+      userName?: string,
+  ) {
+      this.id = id;
+      this.avatarUrl = avatarUrl || '';
+      this.email = email || '';
+      this.lastname = lastname || '';
+      this.name = name || '';
+      this.userName = userName || '';
+  }
+}
+
+
+export { Level, Movement, SubMovement, SubSubMovement, User };

@@ -70,9 +70,6 @@ function RootLayoutNav(){
       <Stack.Screen name="listing/[id]" options={{
         headerTitle: ''
       }}/>
-      <Stack.Screen name="listing/movements" options={{
-        headerTitle: ''
-      }}/>
       <Stack.Screen name="listing/submovements" options={{
         headerTitle: ''
       }}/>

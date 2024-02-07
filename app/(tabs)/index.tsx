@@ -1,11 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, Stack } from 'expo-router';
+import HomeHeader from '@/components/HomeHeader';
+import Listings from '@/components/Listings';
 
 export default function TabHomeScreen() {
   return (
-    <View>
-      <Link href={"/(modals)/login"}>Login</Link>
-      <Link href={"/listing/123"}>Listing details</Link>
+    <View style={{flex: 1}}>
+        <Stack.Screen options={{
+          header: () => <HomeHeader/>,
+        }} 
+      />
+      <Listings />
     </View>
   );
 }

@@ -18,15 +18,6 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="home" size={size} color={color} />,
-          headerRight: () => (
-            <Link href="/" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <MaterialIcons name="logout" size={24} color="black" />
-                )}
-              </Pressable>
-            </Link>
-          ),
         }}
       />
       <Tabs.Screen

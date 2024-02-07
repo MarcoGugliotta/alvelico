@@ -66,29 +66,6 @@ export default function TabCarrieraScreen() {
     fetchUserCareerData();
   }, [levels]);
 
-  async function activateMovement(movement: Movement, level: Level) {
-    try {
-        // Crea un timestamp corrente
-        const timestamp = Timestamp.now();
-
-        // Aggiungi la data di attivazione al movimento
-        movement!.activationDate = timestamp;
-
-        // Ottienie il riferimento al documento del movimento nel database
-        const levelLabel: string = level.label === "Principiante" ? "beginner" :  level.label === "Intermedio" ? "intermediate" : level.label === "Avanzato" ? "advanced" : '';
-            
-        const movementRef = doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid!, Constants.Career, levelLabel, Constants.Movements, movement.id!);
-
-        // Aggiorna il documento del movimento nel database con la nuova data di attivazione
-        const { subMovements, ...movementWithoutSubMovements } = movement;
-        await setDoc(movementRef, movementWithoutSubMovements);
-
-        console.log('Movimento attivato con successo.');
-    } catch (error) {
-        console.error('Errore durante l\'attivazione del movimento:', error);
-    }
-}
-
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Carriera</Text>
@@ -98,9 +75,7 @@ export default function TabCarrieraScreen() {
         <View style={{ flex: 1, gap: 15 }}>
           {levels.map((level, index) => (
             <View key={index}>
-              <Link href={{ pathname: "/listing/movements", params: { level: level.label }}}>
-                <Text>{level.label}{level.movements ? ' >' : ''}</Text>
-              </Link>
+              <Link href={`/listing/levels/${level.id}`}>{level.label}{level.movements ? ' >' : ''}</Link>
               {/* Visualizza i dettagli del livello se disponibili */}
               {level.movements && (
                 <View style={{ marginLeft: 20 }}>
@@ -110,7 +85,6 @@ export default function TabCarrieraScreen() {
                   <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
                   <Text>- Movimenti completati: {countCompletedItems(level.movements)}/{level.movements.length}</Text>
                   <Text>- Movimenti in progress: {countInProgressItems(level.movements)}/{level.movements.length}</Text>
-                  <Button title="Attiva Movimento" onPress={() => activateMovement(level.movements[0], level)} />
                 </View>
               )}
             </View>
