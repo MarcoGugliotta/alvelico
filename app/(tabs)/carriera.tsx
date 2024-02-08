@@ -11,60 +11,72 @@ import { Constants } from '@/constants/Strings';
 
 export default function TabCarrieraScreen() {
   const [levels, setLevels] = useState<Level[] | null>(null);
+  const [movements, setMovements] = useState<Movement[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserCareerData = async () => {
       try {
         setLoading(true);
-        const q = collection(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career);
-        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-          const levelsDoc: Level[] = [];
-          querySnapshot.forEach((doc) => {
-            
-            const levelData = doc.data() as Level;
-            levelsDoc.push(levelData);
-          });
-          // Ordina i livelli in base al progressivo
-          levelsDoc.sort((a, b) => a.progressive - b.progressive);
-          // Array di Promise per le chiamate asincrone a getDocs
-          const promises = levelsDoc.map(async (level) => {
-            const levelLabel: string = level.label === "Principiante" ? "beginner" :  level.label === "Intermedio" ? "intermediate" : level.label === "Avanzato" ? "advanced" : '';
-            const movementsIntRef = collection(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, levelLabel, Constants.Movements);
-            const querySnapshotM = await getDocs(movementsIntRef);
-            level.movements = [];
-            querySnapshotM.forEach((doc) => {
-              const movementsData = doc.data() as Movement;
-              level.movements.push(movementsData);
-            });
-            if (level.movements) {
-              level.movements.sort((a, b) => a.progressive - b.progressive);
-              level.movements.forEach((movement) => {
-                if (movement.subMovements) {
-                  movement.subMovements.sort((a, b) => a.progressive - b.progressive);
-                  movement.subMovements.forEach((subMovement) => {
-                    if (subMovement.subSubMovements) {
-                      subMovement.subSubMovements.sort((a, b) => a.progressive - b.progressive);
-                    }
-                  });
+        if (FIREBASE_AUTH.currentUser) {
+          const userId = FIREBASE_AUTH.currentUser.uid;
+          const q = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career);
+          const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            console.log('Entra 1')
+            const levelsDoc: Level[] = [];
+            const unsubscribeMovements: (() => void)[] = []; // Correzione del nome dell'array
+            querySnapshot.forEach((doc) => {
+              const levelData = doc.data() as Level;
+              const levelId = doc.id;
+              levelData.id = levelId;
+              levelsDoc.push(levelData);
+  
+              const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
+              const unsubscribeM = onSnapshot(movementsIntRef, async (querySnapshotM) => {
+                console.log('Entra 2')
+                const movements: Movement[] = [];
+                querySnapshotM.forEach((doc) => {
+                  const movementData = doc.data() as Movement;
+                  const movementId = doc.id;
+                  movementData.id = movementId;
+                  movements.push(movementData);
+                });
+                const index = levelsDoc.findIndex((level) => level.id === levelId);
+                if (index !== -1) {
+                  levelsDoc[index].movements = movements;
                 }
+                setMovements(movements);
               });
+              unsubscribeMovements.push(unsubscribeM);
+            });
+            // Wait for all movements subscriptions to be set up
+            await Promise.all(unsubscribeMovements);
+            // Sort levelsDoc by progressive
+            levelsDoc.sort((a, b) => a.progressive - b.progressive);
+            setLevels(levelsDoc);
+            setLoading(false);
+            return () => {
+              unsubscribeMovements.forEach((unsubscribeM: () => any) => unsubscribeM()); // Correzione della chiamata a forEach
             }
           });
-          // Aspetta che tutte le chiamate asincrone siano complete prima di impostare i livelli
-          await Promise.all(promises);
-          setLevels(levelsDoc);
-        });
-        return () => unsubscribe();
+          return () => {
+            unsubscribe();
+          };
+        } else {
+          console.error('Nessun utente autenticato.');
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Errore durante il recupero dei dati della carriera dell\'utente:', error);
-      } finally {
         setLoading(false);
       }
     };
   
     fetchUserCareerData();
-  }, [levels]);
+  }, []);
+  
+  
+  
 
   return (
     <ScrollView style={styles.container}>

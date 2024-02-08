@@ -9,6 +9,7 @@ import { defaultStyles } from '@/constants/Styles';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { collection, doc } from 'firebase/firestore';
 import createCareerForUser from '@/hooks/createCareerForUser';
+import generateCareer from '@/hooks/generateCareer';
 
 
 const Page = () => {
@@ -36,7 +37,7 @@ const Page = () => {
             const response = await createUserWithEmailAndPassword(auth, email.value, password.value);
             alert('Controlla la tua email!');
 
-            await createCareerForUser(response.user, name.value, lastname.value)
+            await generateCareer(response.user, name.value, lastname.value)
         } catch (error: any) {
             alert('Registrazione fallita: ' + error.message);
         } finally {
