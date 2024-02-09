@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, Text, View } from 'react-native';
 import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
-import { getDocs, collection, onSnapshot, setDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Level, Movement } from '@/models/Models';
 import { Link } from 'expo-router';
@@ -19,12 +18,11 @@ export default function TabCarrieraScreen() {
       try {
         setLoading(true);
         if (FIREBASE_AUTH.currentUser) {
+          const unsubscribeMovements: (() => void)[] = [];
           const userId = FIREBASE_AUTH.currentUser.uid;
           const q = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career);
           const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-            console.log('Entra 1')
             const levelsDoc: Level[] = [];
-            const unsubscribeMovements: (() => void)[] = []; // Correzione del nome dell'array
             querySnapshot.forEach((doc) => {
               const levelData = doc.data() as Level;
               const levelId = doc.id;
@@ -33,7 +31,6 @@ export default function TabCarrieraScreen() {
   
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
               const unsubscribeM = onSnapshot(movementsIntRef, async (querySnapshotM) => {
-                console.log('Entra 2')
                 const movements: Movement[] = [];
                 querySnapshotM.forEach((doc) => {
                   const movementData = doc.data() as Movement;
@@ -49,19 +46,17 @@ export default function TabCarrieraScreen() {
               });
               unsubscribeMovements.push(unsubscribeM);
             });
-            // Wait for all movements subscriptions to be set up
+
+            
             await Promise.all(unsubscribeMovements);
-            // Sort levelsDoc by progressive
             levelsDoc.sort((a, b) => a.progressive - b.progressive);
             setLevels(levelsDoc);
             setLoading(false);
-            return () => {
-              unsubscribeMovements.forEach((unsubscribeM: () => any) => unsubscribeM()); // Correzione della chiamata a forEach
-            }
           });
+          unsubscribeMovements.push(unsubscribe);
           return () => {
-            unsubscribe();
-          };
+            unsubscribeMovements.forEach((unsubscribeM: () => any) => unsubscribeM());
+          }
         } else {
           console.error('Nessun utente autenticato.');
           setLoading(false);
@@ -87,8 +82,7 @@ export default function TabCarrieraScreen() {
         <View style={{ flex: 1, gap: 15 }}>
           {levels.map((level, index) => (
             <View key={index}>
-              <Link href={`/listing/levels/${level.id}`}>{level.label}{level.movements ? ' >' : ''}</Link>
-              {/* Visualizza i dettagli del livello se disponibili */}
+              <Link href={`/listing/movements/${level.id}`}>{level.label}{level.movements ? ' >' : ''}</Link>
               {level.movements && (
                 <View style={{ marginLeft: 20 }}>
                   <Text>Dettagli del livello:</Text>

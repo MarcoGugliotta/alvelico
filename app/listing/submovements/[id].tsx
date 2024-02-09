@@ -9,6 +9,7 @@ import { Constants } from '@/constants/Strings';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,57 +33,60 @@ const Pages = () => {
             const movements: Movement[] = [];
 
             querySnapshotM.forEach(async (doc) => {
-                const movementData = doc.data() as Movement;
-                const movementId = doc.id;
-                movementData.id = movementId;
-                movements.push(movementData);
-
+              const movementData = doc.data() as Movement;
+              const movementId = doc.id;
+              movementData.id = movementId;
+              movements.push(movementData);
+              
+              if(movementId === id){
                 const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                 const querySnapshotSM = await getDocs(submovementsIntRef);
-
+  
                 if(querySnapshotSM.size > 0){
+                  const unsubscribe = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
                     const submovements: SubMovement[] = [];
                     querySnapshotSM.forEach(async (doc) => {
-                        const submovementData = doc.data() as SubMovement;
-                        const submovementId = doc.id;
-                        submovementData.id = submovementId;
-                        submovements.push(submovementData);
-
-                        if(submovementId === id){
-                            const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
-                            const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
-    
-                            if(querySnapshotSSM.size > 0){
-                                const unsubscribe = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
-                                    const subsubmovements: SubSubMovement[] = [];
-                                    querySnapshotSSM.forEach(async (doc) => {
-                                        const subsubmovementData = doc.data() as SubSubMovement;
-                                        const subsubmovementId = doc.id;
-                                        subsubmovementData.id = subsubmovementId;
-                                        subsubmovements.push(subsubmovementData);
-                                    });
-                                    const index = submovements.findIndex((submovement) => submovement.id === submovementId);
-                                    if (index !== -1) {
-                                        submovements[index].subSubMovements = subsubmovements;
-                                    }                          
-                                    setSubSubMovements(subsubmovements);
-                                });
-                                unsubscribeMovements.push(unsubscribe);
-                            }
-                        }
+                      const submovementData = doc.data() as SubMovement;
+                      const submovementId = doc.id;
+                      submovementData.id = submovementId;
+                      submovements.push(submovementData);
+  
+                      const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
+                      const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
+  
+                      if(querySnapshotSSM.size > 0){
+                        const unsubscribeSSM = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
+                          const subsubmovements: SubSubMovement[] = [];
+                          querySnapshotSSM.forEach(async (doc) => {
+                            const subsubmovementData = doc.data() as SubSubMovement;
+                            const subsubmovementId = doc.id;
+                            subsubmovementData.id = subsubmovementId;
+                            subsubmovements.push(subsubmovementData);
+                          });
+                          const index = submovements.findIndex((submovement) => submovement.id === submovementId);
+                          if (index !== -1) {
+                            submovements[index].subSubMovements = subsubmovements;
+                          }
+                          setSubSubMovements(subsubmovements);
+                        });
+                        unsubscribeMovements.push(unsubscribeSSM);
+                      }
                     });
                     const index = movements.findIndex((movement) => movement.id === movementId);
                     if (index !== -1) {
-                        movements[index].subMovements = submovements;
+                      movements[index].subMovements = submovements;
                     }
-                    
+                    submovements.sort((a, b) => a.progressive - b.progressive);
+                    setSubMovements(submovements);
+                  });
+                  unsubscribeMovements.push(unsubscribe);
                 }
-            });
+              }
+          });
         });
-          // Wait for all movements subscriptions to be set up
+        
         await Promise.all(unsubscribeMovements);
-        // Sort levelsDoc by progressive
-        levelsDoc.sort((a, b) => a.progressive - b.progressive);
+
         setLoading(false);
         return () => {
             unsubscribeMovements.forEach((unsubscribe: () => any) => unsubscribe()); // Correzione della chiamata a forEach
@@ -102,20 +106,29 @@ const Pages = () => {
 
   return (
     <ScrollView>
-      <Text>Sotto sequenze per la sequenza livello {id}</Text>
+      <Text>Sequenze per il movimento {id}</Text>
       {loading ? (
         <Text>Loading...</Text>
-      ) : subsubmovements && FIREBASE_AUTH.currentUser ? (
+      ) : submovements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
-          {subsubmovements.map((subsubmovement, index) => (
+          {submovements.map((submovement, index) => (
             <View key={index}>
-              <Link href={`/listing/submovements/${subsubmovement.id}`}>{subsubmovement.label}</Link>
-              <Text>{subsubmovement.activationDate ? formatTimestampToString(subsubmovement.activationDate) : '--/--/----'}</Text>
+              <Link href={`/listing/subsubmovements/${submovement.id}`}>{submovement.label}{submovement.subSubMovements ? ' >' : ''}</Link>
+              {submovement.subSubMovements && (
+                <View style={{ marginLeft: 20 }}>
+                  <Text>Dettagli della sequenza:</Text>
+                  <Text>- Data Attivazione: {submovement.activationDate ? formatTimestampToString(submovement.activationDate) : '--/--/----'}</Text>
+                  <Text>- Data Completamento: {submovement.completionDate ? formatTimestampToString(submovement.completionDate) : '--/--/----'}</Text>
+                  <Text>- Percentuale Progresso: {submovement.completionPercentage}</Text>
+                  <Text>- Sotto Sequenze completate: {countCompletedItems(submovement.subSubMovements)}/{submovement.subSubMovements.length}</Text>
+                  <Text>- Sotto Sequenze in progress: {countInProgressItems(submovement.subSubMovements)}/{submovement.subSubMovements.length}</Text>
+                </View>
+              )}
             </View>
           ))}
         </View>
       ) : (
-        <Text>Nessun livello trovato.</Text>
+        <Text>Nessuna sequnza trovata.</Text>
       )}
     </ScrollView>
   );

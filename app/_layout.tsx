@@ -67,11 +67,14 @@ function RootLayoutNav(){
           </TouchableOpacity>
         ),
       }}/>
-      <Stack.Screen name="listing/levels/[id]" options={{
-        headerTitle: 'Livello'
-      }}/>
       <Stack.Screen name="listing/movements/[id]" options={{
-        headerTitle: 'Movimento'
+        headerTitle: 'Movimenti'
+      }}/>
+      <Stack.Screen name="listing/submovements/[id]" options={{
+        headerTitle: 'Sequenze'
+      }}/>
+      <Stack.Screen name="listing/subsubmovements/[id]" options={{
+        headerTitle: 'Sotto Sequenze'
       }}/>
     </Stack>
   );
