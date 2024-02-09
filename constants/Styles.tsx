@@ -7,6 +7,13 @@ export const defaultStyles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FDFFFF'
     },
+    constainerRow: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between',
+        backgroundColor: '#FDFFFF'
+    },
     inputField: {
         height:44,
         borderWidth:1,

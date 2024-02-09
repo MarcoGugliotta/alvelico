@@ -6,9 +6,11 @@ import { countCompletedItems, countInProgressItems, formatTimestampToString } fr
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
+import CareerItem from '@/components/CareerItem';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [movement, setMovement] = useState<Movement | null>(null);
   const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,7 @@ const Pages = () => {
               movements.push(movementData);
               
               if(movementId === id){
+                setMovement(movementData);
                 const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                 const querySnapshotSM = await getDocs(submovementsIntRef);
   
@@ -106,29 +109,22 @@ const Pages = () => {
 
   return (
     <ScrollView>
-      <Text>Sequenze per il movimento {id}</Text>
+      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Sequenze per il movimento {movement?.label}</Text>
       {loading ? (
         <Text>Loading...</Text>
       ) : submovements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
           {submovements.map((submovement, index) => (
-            <View key={index}>
-              <Link href={`/listing/subsubmovements/${submovement.id}`}>{submovement.label}{submovement.subSubMovements ? ' >' : ''}</Link>
-              {submovement.subSubMovements && (
-                <View style={{ marginLeft: 20 }}>
-                  <Text>Dettagli della sequenza:</Text>
-                  <Text>- Data Attivazione: {submovement.activationDate ? formatTimestampToString(submovement.activationDate) : '--/--/----'}</Text>
-                  <Text>- Data Completamento: {submovement.completionDate ? formatTimestampToString(submovement.completionDate) : '--/--/----'}</Text>
-                  <Text>- Percentuale Progresso: {submovement.completionPercentage}</Text>
-                  <Text>- Sotto Sequenze completate: {countCompletedItems(submovement.subSubMovements)}/{submovement.subSubMovements.length}</Text>
-                  <Text>- Sotto Sequenze in progress: {countInProgressItems(submovement.subSubMovements)}/{submovement.subSubMovements.length}</Text>
-                </View>
-              )}
-            </View>
+            <CareerItem key={index} prop={{
+              type: 'subsubmovements',
+              item: submovement,
+              hrefPath: 'subsubmovements',
+              subItems: submovement.subSubMovements
+            }}></CareerItem>
           ))}
         </View>
       ) : (
-        <Text>Nessuna sequnza trovata.</Text>
+        <Text>Nessuna sequenza trovata.</Text>
       )}
     </ScrollView>
   );

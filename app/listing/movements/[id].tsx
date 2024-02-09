@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement } from '@/models/Models';
 import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
+import { defaultStyles } from '@/constants/Styles';
+import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import CareerItem from '@/components/CareerItem';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [level, setLevel] = useState<Level | null>(null);
   const [movements, setMovements] = useState<Movement[] | null>(null);
   const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,7 @@ const Pages = () => {
             const levelId = doc.id;
             levelData.id = levelId;
             if(id === levelId){
+              setLevel(levelData);
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
               const unsubscribe = onSnapshot(movementsIntRef, async (querySnapshotM) => {
                 const movements: Movement[] = [];
@@ -87,26 +92,18 @@ const Pages = () => {
 
   return (
     <ScrollView>
-      <Text>Movimenti per il livello {id}</Text>
+      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Movimenti per il livello {level?.label}</Text>
       {loading ? (
         <Text>Loading...</Text>
       ) : movements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
           {movements.map((movement, index) => (
-            <View key={index}>
-              <Link href={`/listing/submovements/${movement.id}`}>{movement.label}{movement.subMovements ? ' >' : ''}</Link>
-              
-              {movement.subMovements && (
-                <View style={{ marginLeft: 20 }}>
-                  <Text>Dettagli del Movimento:</Text>
-                  <Text>- Data Attivazione: {movement.activationDate ? formatTimestampToString(movement.activationDate) : '--/--/----'}</Text>
-                  <Text>- Data Completamento: {movement.completionDate ? formatTimestampToString(movement.completionDate) : '--/--/----'}</Text>
-                  <Text>- Percentuale Progresso: {movement.completionPercentage}</Text>
-                  <Text>- Sequenze completate: {countCompletedItems(movement.subMovements)}/{movement.subMovements.length}</Text>
-                  <Text>- Sequenze in progress: {countInProgressItems(movement.subMovements)}/{movement.subMovements.length}</Text>
-                </View>
-              )}
-            </View>
+            <CareerItem key={index} prop={{
+              type: 'submovements',
+              item: movement,
+              hrefPath: 'submovements',
+              subItems: movement.subMovements
+            }}></CareerItem>
           ))}
         </View>
       ) : (

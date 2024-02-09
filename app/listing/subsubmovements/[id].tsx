@@ -6,9 +6,11 @@ import { countCompletedItems, countInProgressItems, formatTimestampToString } fr
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
+import CareerItem from '@/components/CareerItem';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [submovement, setSubMovement] = useState<SubMovement | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -49,6 +51,7 @@ const Pages = () => {
                         submovements.push(submovementData);
 
                         if(submovementId === id){
+                            setSubMovement(submovementData);
                             const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
                             const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
     
@@ -99,16 +102,18 @@ const Pages = () => {
 
   return (
     <ScrollView>
-      <Text>Sotto sequenze per la sequenza {id}</Text>
+      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Sotto Sequenze per la sequenza {submovement?.label}</Text>
       {loading ? (
         <Text>Loading...</Text>
       ) : subsubmovements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
           {subsubmovements.map((subsubmovement, index) => (
-            <View key={index}>
-              <Text>{subsubmovement.label}</Text>
-              <Text>{subsubmovement.activationDate ? formatTimestampToString(subsubmovement.activationDate) : '--/--/----'}</Text>
-            </View>
+            <CareerItem key={index} prop={{
+              type: 'subsubmovements',
+              item: subsubmovement,
+              hrefPath: undefined,
+              subItems: undefined
+            }}></CareerItem>
           ))}
         </View>
       ) : (

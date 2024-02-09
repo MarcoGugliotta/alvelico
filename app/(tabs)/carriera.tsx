@@ -7,6 +7,7 @@ import { Level, Movement } from '@/models/Models';
 import { Link } from 'expo-router';
 import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { Constants } from '@/constants/Strings';
+import CareerItem from '@/components/CareerItem';
 
 export default function TabCarrieraScreen() {
   const [levels, setLevels] = useState<Level[] | null>(null);
@@ -75,25 +76,18 @@ export default function TabCarrieraScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Carriera</Text>
+      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Carriera Windsurf</Text>
       {loading ? (
         <Text>Loading...</Text>
       ) : levels && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
           {levels.map((level, index) => (
-            <View key={index}>
-              <Link href={`/listing/movements/${level.id}`}>{level.label}{level.movements ? ' >' : ''}</Link>
-              {level.movements && (
-                <View style={{ marginLeft: 20 }}>
-                  <Text>Dettagli del livello:</Text>
-                  <Text>- Data Attivazione: {level.activationDate ? formatTimestampToString(level.activationDate) : '--/--/----'}</Text>
-                  <Text>- Data Completamento: {level.completionDate ? formatTimestampToString(level.completionDate) : '--/--/----'}</Text>
-                  <Text>- Percentuale Progresso: {level.completionPercentage}</Text>
-                  <Text>- Movimenti completati: {countCompletedItems(level.movements)}/{level.movements.length}</Text>
-                  <Text>- Movimenti in progress: {countInProgressItems(level.movements)}/{level.movements.length}</Text>
-                </View>
-              )}
-            </View>
+            <CareerItem key={index} prop={{
+              type: 'movements',
+              item: level,
+              hrefPath: 'movements',
+              subItems: level.movements
+            }}></CareerItem>
           ))}
         </View>
       ) : (
