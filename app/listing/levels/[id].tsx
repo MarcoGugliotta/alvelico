@@ -68,6 +68,7 @@ const Pages = () => {
                 if (index !== -1) {
                   levelsDoc[index].movements = movements;
                 }
+                movements.sort((a, b) => a.progressive - b.progressive);
                 setMovements(movements);
               });
               unsubscribeMovements.push(unsubscribe);
