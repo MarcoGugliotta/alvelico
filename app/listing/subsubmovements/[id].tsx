@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
-import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
 
@@ -13,6 +12,7 @@ const Pages = () => {
   const [submovement, setSubMovement] = useState<SubMovement | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [collectionRef, setCollectionRef] = useState<CollectionReference<DocumentData, DocumentData> | null>(null)
 
   useEffect(() => {
     const fetchLevelData = async () => {
@@ -54,7 +54,7 @@ const Pages = () => {
                             setSubMovement(submovementData);
                             const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
                             const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
-    
+                            setCollectionRef(subsubmovementsIntRef);
                             if(querySnapshotSSM.size > 0){
                                 const unsubscribe = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
                                     const subsubmovements: SubSubMovement[] = [];
@@ -107,12 +107,13 @@ const Pages = () => {
         <Text>Loading...</Text>
       ) : subsubmovements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
-          {subsubmovements.map((subsubmovement, index) => (
+          {collectionRef && subsubmovements.map((subsubmovement, index) => (
             <CareerItem key={index} prop={{
               type: 'subsubmovements',
               item: subsubmovement,
               hrefPath: undefined,
-              subItems: undefined
+              subItems: undefined,
+              collectionRef: collectionRef
             }}></CareerItem>
           ))}
         </View>

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
-import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
 
@@ -14,6 +13,7 @@ const Pages = () => {
   const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [collectionRef, setCollectionRef] = useState<CollectionReference<DocumentData, DocumentData> | null>(null)
 
   useEffect(() => {
     const fetchLevelData = async () => {
@@ -45,6 +45,7 @@ const Pages = () => {
                 const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                 const querySnapshotSM = await getDocs(submovementsIntRef);
   
+                setCollectionRef(submovementsIntRef);
                 if(querySnapshotSM.size > 0){
                   const unsubscribe = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
                     const submovements: SubMovement[] = [];
@@ -114,12 +115,13 @@ const Pages = () => {
         <Text>Loading...</Text>
       ) : submovements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
-          {submovements.map((submovement, index) => (
+          {collectionRef && submovements.map((submovement, index) => (
             <CareerItem key={index} prop={{
               type: 'subsubmovements',
               item: submovement,
               hrefPath: 'subsubmovements',
-              subItems: submovement.subSubMovements
+              subItems: submovement.subSubMovements,
+              collectionRef: collectionRef
             }}></CareerItem>
           ))}
         </View>

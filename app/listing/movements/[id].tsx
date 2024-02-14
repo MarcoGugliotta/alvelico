@@ -4,7 +4,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement } from '@/models/Models';
 import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import { defaultStyles } from '@/constants/Styles';
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
@@ -16,6 +16,7 @@ const Pages = () => {
   const [movements, setMovements] = useState<Movement[] | null>(null);
   const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [collectionRef, setCollectionRef] = useState<CollectionReference<DocumentData, DocumentData> | null>(null)
 
   useEffect(() => {
     const fetchLevelData = async () => {
@@ -43,6 +44,7 @@ const Pages = () => {
                   movements.push(movementData);
                   const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                   const querySnapshot = await getDocs(submovementsIntRef);
+                  setCollectionRef(movementsIntRef);
                   if(querySnapshot.size > 0){
                     const unsubscribeSM = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
                       const submovements: SubMovement[] = [];
@@ -97,12 +99,13 @@ const Pages = () => {
         <Text>Loading...</Text>
       ) : movements && FIREBASE_AUTH.currentUser ? (
         <View style={{ flex: 1, gap: 15 }}>
-          {movements.map((movement, index) => (
+          {collectionRef && movements.map((movement, index) => (
             <CareerItem key={index} prop={{
               type: 'submovements',
               item: movement,
               hrefPath: 'submovements',
-              subItems: movement.subMovements
+              subItems: movement.subMovements,
+              collectionRef: collectionRef
             }}></CareerItem>
           ))}
         </View>

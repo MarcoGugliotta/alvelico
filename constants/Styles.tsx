@@ -12,7 +12,7 @@ export const defaultStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems:'center',
         justifyContent:'space-between',
-        backgroundColor: '#FDFFFF'
+        backgroundColor: '#FDFFFF',
     },
     inputField: {
         height:44,

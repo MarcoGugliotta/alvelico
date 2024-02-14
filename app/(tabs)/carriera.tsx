@@ -4,8 +4,6 @@ import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Level, Movement } from '@/models/Models';
-import { Link } from 'expo-router';
-import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
 
@@ -86,7 +84,8 @@ export default function TabCarrieraScreen() {
               type: 'movements',
               item: level,
               hrefPath: 'movements',
-              subItems: level.movements
+              subItems: level.movements,
+              collectionRef: undefined
             }}></CareerItem>
           ))}
         </View>
