@@ -7,6 +7,7 @@ import { formatTimestampToString, countCompletedItems } from '@/hooks/utils';
 import { AntDesign } from '@expo/vector-icons';
 import { CollectionReference, DocumentData } from 'firebase/firestore';
 import completeItem from '@/hooks/completeItem';
+import { Constants } from '@/constants/Strings';
 
 interface Props {
     prop: {
@@ -36,7 +37,7 @@ const CareerItem = ({ prop }: Props) => {
     // Inverti lo stato di isChecked
     const toggleCheck = async () => {
         // Inverti lo stato di isChecked
-        await completeItem({collectionRef: prop['collectionRef'], item: item})
+        await completeItem({collectionRef: prop['collectionRef']!, item: item})
         setIsChecked(!isChecked);
     };
 
@@ -67,9 +68,9 @@ const CareerItem = ({ prop }: Props) => {
                         <Text>Completamento: {item.completionDate ? formatTimestampToString(item.completionDate) : '--/--/----'}</Text>
                     </View>
                     <View style={{backgroundColor: 'yellow'}}>
-                        <TouchableOpacity onPress={toggleCheck}>
-                            {isChecked ? (
-                                <AntDesign name="checkcircle" size={24} color="black" />
+                        <TouchableOpacity disabled={item['status'] === Constants.Completed} onPress={toggleCheck}>
+                            {isChecked || item['status'] === Constants.Completed ? (
+                                <AntDesign name="checkcircle" size={24} color="grey" />
                             ) : (
                                 <AntDesign name="checkcircleo" size={24} color="black" />
                             )}

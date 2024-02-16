@@ -6,5 +6,11 @@ export enum Constants {
     Career = 'career',
     Movements = 'movements',
     SubMovements = 'subMovements',
-    SubSubMovements = 'subSubMovements'
+    SubSubMovements = 'subSubMovements',
+    Boards = 'boards',
+    Sails = 'sails',
+    NotActive = 'not_active',
+    InProgres = 'in_progress',
+    Completed = 'completed',
+
 }

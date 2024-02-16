@@ -3,21 +3,25 @@ import { Timestamp } from "firebase/firestore";
 class Level {
   id?: string;
   label: string;
+  status: string;
   activationDate: Timestamp | null;
   completionDate: Timestamp | null;
   movements: Movement[];
   completionPercentage: number;
   progressive: number;
+  parentId?: string;
 
-  constructor(id?: string, label?: string, activationDate?: Timestamp | null,
-    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, progressive?: number) {
+  constructor(id?: string, label?: string, status?: string, activationDate?: Timestamp | null,
+    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, progressive?: number, parentId?: string) {
       this.id = id;
       this.label = label || '';
+      this.status = status || '';
       this.activationDate = activationDate || null;
       this.completionDate = completionDate || null;
       this.movements = movements || [];
       this.completionPercentage = completionPercentage || 0;
       this.progressive = progressive || 0;
+      this.parentId = parentId || '';
   }
 }
 
@@ -30,7 +34,9 @@ class Movement {
   completionDate: Timestamp | null;
   subMovements?: SubMovement[];
   completionPercentage: number;
+  relativeCompletionPercentage: number;
   progressive: number;
+  parentId?: string;
 
   constructor(
       id?: string,
@@ -41,7 +47,9 @@ class Movement {
       completionDate?: Timestamp | null,
       subMovements?: SubMovement[],
       completionPercentage?: number,
-      progressive?: number
+      relativeCompletionPercentage?: number,
+      progressive?: number,
+      parentId?: string
   ) {
       this.id = id;
       this.label = label || '';
@@ -51,7 +59,9 @@ class Movement {
       this.completionDate = completionDate || null;
       this.subMovements = subMovements || [];
       this.completionPercentage = completionPercentage || 0;
+      this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
+      this.parentId = parentId || '';
   }
 }
 
@@ -64,7 +74,9 @@ class SubMovement {
   completionDate: Timestamp | null;
   subSubMovements?: SubSubMovement[];
   completionPercentage: number;
+  relativeCompletionPercentage: number;
   progressive: number;
+  parentId?: string;
 
   constructor(
       id?: string,
@@ -75,7 +87,9 @@ class SubMovement {
       completionDate?: Timestamp | null,
       subSubMovements?: SubSubMovement[],
       completionPercentage?: number,
-      progressive?: number
+      relativeCompletionPercentage?: number,
+      progressive?: number, 
+      parentId?: string
   ) {
       this.id = id;
       this.label = label || '';
@@ -85,7 +99,9 @@ class SubMovement {
       this.completionDate = completionDate || null;
       this.subSubMovements = subSubMovements || [];
       this.completionPercentage = completionPercentage || 0;
+      this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
+      this.parentId = parentId || '';
   }
 }
 
@@ -97,7 +113,9 @@ class SubSubMovement {
   activationDate: Timestamp | null;
   completionDate: Timestamp | null;
   completionPercentage: number;
+  relativeCompletionPercentage: number;
   progressive: number;
+  parentId?: string;
 
   constructor(
       id?: string,
@@ -107,7 +125,9 @@ class SubSubMovement {
       activationDate?: Timestamp | null,
       completionDate?: Timestamp | null,
       completionPercentage?: number,
-      progressive?: number
+      relativeCompletionPercentage?: number,
+      progressive?: number, 
+      parentId?: string
   ) {
       this.id = id;
       this.label = label || '';
@@ -116,7 +136,9 @@ class SubSubMovement {
       this.activationDate = activationDate || null;
       this.completionDate = completionDate || null;
       this.completionPercentage = completionPercentage || 0;
+      this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
+      this.parentId = parentId || '';
   }
 }
 

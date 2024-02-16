@@ -4,11 +4,12 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement } from '@/models/Models';
 import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { CollectionReference, DocumentData, collection, doc, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import { defaultStyles } from '@/constants/Styles';
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import CareerItem from '@/components/CareerItem';
+import { updateParentItemsAfterCompletion } from '@/hooks/updateItems';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -28,14 +29,15 @@ const Pages = () => {
           const levelsDoc: Level[] = [];
           const unsubscribeMovements: (() => void)[] = [];
           const querySnapshot = await getDocs(q);
-          querySnapshot.forEach(async (doc) => {
-            const levelData = doc.data() as Level;
-            const levelId = doc.id;
+          querySnapshot.forEach(async (docL) => {
+            const levelData = docL.data() as Level;
+            const levelId = docL.id;
             levelData.id = levelId;
             if(id === levelId){
               setLevel(levelData);
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
               const unsubscribe = onSnapshot(movementsIntRef, async (querySnapshotM) => {
+                setCollectionRef(movementsIntRef);
                 const movements: Movement[] = [];
                 querySnapshotM.forEach(async (doc) => {
                   const movementData = doc.data() as Movement;
@@ -44,7 +46,6 @@ const Pages = () => {
                   movements.push(movementData);
                   const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                   const querySnapshot = await getDocs(submovementsIntRef);
-                  setCollectionRef(movementsIntRef);
                   if(querySnapshot.size > 0){
                     const unsubscribeSM = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
                       const submovements: SubMovement[] = [];
@@ -91,6 +92,7 @@ const Pages = () => {
   
     fetchLevelData();
   }, []);
+
 
   return (
     <ScrollView>
