@@ -38,6 +38,15 @@ export const defaultStyles = StyleSheet.create({
         position:'absolute',
         left:16
     },
+    loading: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center'
+      },
     footer: {
         position:'absolute',
         height: 100,

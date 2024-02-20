@@ -12,6 +12,7 @@ import { theme } from '@/theme/theme'
 const HomeHeader = () => {
   const [nameUser, setNameUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pointsUser, setPointsUser] = useState<number | null>(null);
   const auth = FIREBASE_AUTH;
   useEffect(() => {
     const fetchUserCareerData = async () => {
@@ -22,6 +23,7 @@ const HomeHeader = () => {
           const unsubscribe = onSnapshot(q, async (querySnapshot) => {
             const user = querySnapshot.data() as User;
             setNameUser(user.userName);
+            setPointsUser(user.points);
           });
           return () => unsubscribe();
         }
@@ -39,10 +41,13 @@ const HomeHeader = () => {
     <SafeAreaView style={{flex: 1, backgroundColor:'#fff'}}>
       <View style={styles.container}>
         <View style={styles.actionRow}>
+          <View style={{gap: 10}}>
             <Text style={styles.titleHeader}>Ciao {nameUser}!</Text>
-            <TouchableOpacity style={styles.avatarBtn}>
-                <Avatar.Image size={80} source={require('@/assets/avatar.png')} />
-            </TouchableOpacity>
+            <Text style={styles.subHeader}>Punti {pointsUser}!</Text>
+          </View>
+          <TouchableOpacity style={styles.avatarBtn}>
+              <Avatar.Image size={80} source={require('@/assets/avatar.png')} />
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -67,6 +72,11 @@ const styles = StyleSheet.create({
         fontFamily:'rale-b',
         fontSize: 24,
         color: '#3d3d3d'
+    },
+    subHeader: {
+      fontFamily:'rale-sb',
+      fontSize: 20,
+      color: '#3d3d3d'
     }
 })
 

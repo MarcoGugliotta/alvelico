@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Text, FlatList } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement } from '@/models/Models';
-import { countCompletedItems, countInProgressItems, formatTimestampToString } from '@/hooks/utils';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { CollectionReference, DocumentData, collection, doc, getDocs, onSnapshot } from 'firebase/firestore';
+import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
-import { defaultStyles } from '@/constants/Styles';
-import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import CareerItem from '@/components/CareerItem';
-import { updateParentItemsAfterCompletion } from '@/hooks/updateItems';
 
 const Pages = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,6 +33,7 @@ const Pages = () => {
               setLevel(levelData);
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
               const unsubscribe = onSnapshot(movementsIntRef, async (querySnapshotM) => {
+                setLoading(true);
                 setCollectionRef(movementsIntRef);
                 const movements: Movement[] = [];
                 querySnapshotM.forEach(async (doc) => {
@@ -48,6 +45,7 @@ const Pages = () => {
                   const querySnapshot = await getDocs(submovementsIntRef);
                   if(querySnapshot.size > 0){
                     const unsubscribeSM = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
+                      setLoading(true);
                       const submovements: SubMovement[] = [];
                       querySnapshotSM.forEach((doc) => {
                         const submovementData = doc.data() as SubMovement;
@@ -60,6 +58,7 @@ const Pages = () => {
                         movements[index].subMovements = submovements;
                       }
                       setSubMovements(submovements);
+                      setLoading(false)
                     });
                     unsubscribeMovements.push(unsubscribeSM);
                   }
@@ -95,27 +94,27 @@ const Pages = () => {
 
 
   return (
-    <ScrollView>
-      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Movimenti per il livello {level?.label}</Text>
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : movements && FIREBASE_AUTH.currentUser ? (
-        <View style={{ flex: 1, gap: 15 }}>
-          {collectionRef && movements.map((movement, index) => (
-            <CareerItem key={index} prop={{
-              type: 'submovements',
-              item: movement,
-              hrefPath: 'submovements',
-              subItems: movement.subMovements,
-              collectionRef: collectionRef
-            }}></CareerItem>
-          ))}
-        </View>
-      ) : (
-        <Text>Nessun movimento trovato.</Text>
+    <FlatList
+      data={movements}
+      keyExtractor={(item, index) => index.toString()}
+      ListHeaderComponent={
+        <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Movimenti per il livello {level?.label}</Text>
+      }
+      ListEmptyComponent={<Text>Nessun movimento trovato.</Text>}
+      renderItem={({ item }) => (
+        <CareerItem
+          prop={{
+            type: 'submovements',
+            item: item,
+            hrefPath: 'submovements',
+            subItems: item.subMovements,
+            collectionRef: collectionRef!
+          }}
+        />
       )}
-    </ScrollView>
+    />
   );
+  
 }
 
 export default Pages;

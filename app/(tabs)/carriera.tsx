@@ -34,6 +34,7 @@ export default function TabCarrieraScreen() {
                 querySnapshotM.forEach((doc) => {
                   const movementData = doc.data() as Movement;
                   const movementId = doc.id;
+
                   movementData.id = movementId;
                   movements.push(movementData);
                 });

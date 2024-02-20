@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
@@ -109,27 +109,27 @@ const Pages = () => {
   }, []);
 
   return (
-    <ScrollView>
-      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Sequenze per il movimento {movement?.label}</Text>
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : submovements && FIREBASE_AUTH.currentUser ? (
-        <View style={{ flex: 1, gap: 15 }}>
-          {collectionRef && submovements.map((submovement, index) => (
-            <CareerItem key={index} prop={{
-              type: 'subsubmovements',
-              item: submovement,
-              hrefPath: 'subsubmovements',
-              subItems: submovement.subSubMovements,
-              collectionRef: collectionRef
-            }}></CareerItem>
-          ))}
-        </View>
-      ) : (
-        <Text>Nessuna sequenza trovata.</Text>
+    <FlatList
+      data={submovements}
+      keyExtractor={(item, index) => index.toString()}
+      ListHeaderComponent={
+        <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Sequenze per il movimento {movement?.label}</Text>
+      }
+      ListEmptyComponent={<Text>Nessuna sequenza trovata.</Text>}
+      renderItem={({ item }) => (
+        <CareerItem
+          prop={{
+            type: 'subsubmovements',
+            item: item,
+            hrefPath: 'subsubmovements',
+            subItems: item.subSubMovements,
+            collectionRef: collectionRef!
+          }}
+        />
       )}
-    </ScrollView>
+    />
   );
+  
 }
 
 export default Pages;

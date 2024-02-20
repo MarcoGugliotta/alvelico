@@ -10,9 +10,11 @@ class Level {
   completionPercentage: number;
   progressive: number;
   parentId?: string;
+  points?: number
 
   constructor(id?: string, label?: string, status?: string, activationDate?: Timestamp | null,
-    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, progressive?: number, parentId?: string) {
+    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, progressive?: number, parentId?: string,
+    points?: number) {
       this.id = id;
       this.label = label || '';
       this.status = status || '';
@@ -22,6 +24,7 @@ class Level {
       this.completionPercentage = completionPercentage || 0;
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
+      this.points = points || 0;
   }
 }
 
@@ -37,6 +40,7 @@ class Movement {
   relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
+  points?: number;
 
   constructor(
       id?: string,
@@ -49,7 +53,8 @@ class Movement {
       completionPercentage?: number,
       relativeCompletionPercentage?: number,
       progressive?: number,
-      parentId?: string
+      parentId?: string,
+      points?: number
   ) {
       this.id = id;
       this.label = label || '';
@@ -62,6 +67,7 @@ class Movement {
       this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
+      this.points = points || 0;
   }
 }
 
@@ -77,6 +83,7 @@ class SubMovement {
   relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
+  points?: number
 
   constructor(
       id?: string,
@@ -89,7 +96,8 @@ class SubMovement {
       completionPercentage?: number,
       relativeCompletionPercentage?: number,
       progressive?: number, 
-      parentId?: string
+      parentId?: string,
+      points?: number
   ) {
       this.id = id;
       this.label = label || '';
@@ -102,6 +110,7 @@ class SubMovement {
       this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
+      this.points = points || 0;
   }
 }
 
@@ -116,6 +125,7 @@ class SubSubMovement {
   relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
+  points?: number
 
   constructor(
       id?: string,
@@ -127,7 +137,8 @@ class SubSubMovement {
       completionPercentage?: number,
       relativeCompletionPercentage?: number,
       progressive?: number, 
-      parentId?: string
+      parentId?: string,
+      points?: number
   ) {
       this.id = id;
       this.label = label || '';
@@ -139,6 +150,7 @@ class SubSubMovement {
       this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
+      this.points = points || 0;
   }
 }
 
@@ -150,6 +162,7 @@ class User {
   lastname: string;
   name: string;
   userName: string;
+  points: number;
 
   constructor(
       id?: string,
@@ -158,6 +171,7 @@ class User {
       lastname?: string,
       name?: string,
       userName?: string,
+      points?: number,
   ) {
       this.id = id;
       this.avatarUrl = avatarUrl || '';
@@ -165,6 +179,7 @@ class User {
       this.lastname = lastname || '';
       this.name = name || '';
       this.userName = userName || '';
+      this.points = points || 0;
   }
 }
 

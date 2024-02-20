@@ -1,4 +1,4 @@
-import { Movement } from "@/models/Models";
+import { Level, Movement, SubMovement, SubSubMovement } from "@/models/Models";
 import { Timestamp } from "firebase/firestore";
 
 const formatTimestampToString = function (timestamp: Timestamp): string{

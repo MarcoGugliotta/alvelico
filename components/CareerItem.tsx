@@ -8,6 +8,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { CollectionReference, DocumentData } from 'firebase/firestore';
 import completeItem from '@/hooks/completeItem';
 import { Constants } from '@/constants/Strings';
+import activeItem from '@/hooks/activeItem';
 
 interface Props {
     prop: {
@@ -16,11 +17,12 @@ interface Props {
         item: Level | Movement | SubMovement | SubSubMovement,
         subItems: Level[] | Movement[] | SubMovement[] | SubSubMovement[] | undefined,
         collectionRef: CollectionReference<DocumentData, DocumentData> | undefined
-    }
+    },
 } 
 
 const CareerItem = ({ prop }: Props) => {
-    const [isChecked, setIsChecked] = useState(false);
+    const [isCheckedComplete, setIsCheckedComplete] = useState(false);
+    const [isCheckedInProg, setIsCheckedInProg] = useState(false);
     const [loading, setLoading] = useState(false);
     let subItemsLabel = "Sequenze";
     if (prop.type === 'movements') {
@@ -35,10 +37,16 @@ const CareerItem = ({ prop }: Props) => {
     const item = prop['item'];
 
     // Inverti lo stato di isChecked
-    const toggleCheck = async () => {
+    const toggleCheckComplete = async () => {
         // Inverti lo stato di isChecked
         await completeItem({collectionRef: prop['collectionRef']!, item: item})
-        setIsChecked(!isChecked);
+        setIsCheckedComplete(!isCheckedComplete);
+    };
+
+    const toggleCheckInProg = async () => {
+        // Inverti lo stato di isChecked
+        await activeItem({collectionRef: prop['collectionRef']!, item: item})
+        setIsCheckedInProg(!isCheckedInProg);
     };
 
     return (
@@ -47,12 +55,14 @@ const CareerItem = ({ prop }: Props) => {
                 {itemsCloned ? (
                 <View style={[defaultStyles.constainerRow, { flex: 1, padding: 24}]}>
                     <View style={{backgroundColor: 'yellow'}}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.label}</Text>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold' }}>Dettagli del Movimento:</Text>
-                    <Text>Attivazione: {item.activationDate ? formatTimestampToString(item.activationDate) : '--/--/----'}</Text>
-                    <Text>Completamento: {item.completionDate ? formatTimestampToString(item.completionDate) : '--/--/----'}</Text>
-                    <Text>{subItemsLabel} completate: {countCompletedItems(itemsCloned)}/{itemsCloned.length}</Text>
-                    {/*<Text>- {subItemsLabel} in progress: {countInProgressItems(itemsCloned)}/{itemsCloned.length}</Text>*/}
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.label}</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold' }}>Dettagli del Movimento:</Text>
+                        <Text>Attivazione: {item.activationDate ? formatTimestampToString(item.activationDate) : '--/--/----'}</Text>
+                        <Text>Completamento: {item.completionDate ? formatTimestampToString(item.completionDate) : '--/--/----'}</Text>
+                        <Text>{subItemsLabel} completate: {countCompletedItems(itemsCloned)}/{itemsCloned.length}</Text>
+                        <Text>Punti: {item.points}</Text>
+                        <Text style={{color: 'red'}}>{item.status}</Text>
+                        {/*<Text>- {subItemsLabel} in progress: {countInProgressItems(itemsCloned)}/{itemsCloned.length}</Text>*/}
                     </View>
                     <View style={{backgroundColor: 'yellow'}}>
                         <Text style={{ fontSize: 30 }}>{item.completionPercentage}%</Text>
@@ -66,10 +76,21 @@ const CareerItem = ({ prop }: Props) => {
                         <Text style={{ fontSize: 15, fontWeight: 'bold' }}>Dettagli del Movimento:</Text>
                         <Text>Attivazione: {item.activationDate ? formatTimestampToString(item.activationDate) : '--/--/----'}</Text>
                         <Text>Completamento: {item.completionDate ? formatTimestampToString(item.completionDate) : '--/--/----'}</Text>
+                        <Text>Punti: {item.points}</Text>
+                        <Text style={{color: 'red'}}>{item.status}</Text>
                     </View>
-                    <View style={{backgroundColor: 'yellow'}}>
-                        <TouchableOpacity disabled={item['status'] === Constants.Completed} onPress={toggleCheck}>
-                            {isChecked || item['status'] === Constants.Completed ? (
+                    <View style={{backgroundColor: 'yellow', gap:20}}>
+                        <Text>Completa</Text>
+                        <TouchableOpacity disabled={item['status'] === Constants.Completed || item['status'] === Constants.NotActive} onPress={toggleCheckComplete}>
+                            {isCheckedComplete || item['status'] === Constants.Completed || item['status'] === Constants.NotActive ? (
+                                <AntDesign name="checkcircle" size={24} color="grey" />
+                            ) : (
+                                <AntDesign name="checkcircleo" size={24} color="black" />
+                            )}
+                        </TouchableOpacity>
+                        <Text>Attiva</Text>
+                        <TouchableOpacity disabled={item['status'] === Constants.InProgres || item['status'] === Constants.Completed} onPress={toggleCheckInProg}>
+                            {isCheckedInProg || item['status'] === Constants.InProgres || item['status'] === Constants.Completed ? (
                                 <AntDesign name="checkcircle" size={24} color="grey" />
                             ) : (
                                 <AntDesign name="checkcircleo" size={24} color="black" />
