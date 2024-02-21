@@ -23,7 +23,6 @@ const Pages = () => {
           const userId = FIREBASE_AUTH.currentUser.uid;
           const q = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career);
           const levelsDoc: Level[] = [];
-          const unsubscribeMovements: (() => void)[] = [];
           const querySnapshot = await getDocs(q);
           querySnapshot.forEach(async (docL) => {
             const levelData = docL.data() as Level;
@@ -32,7 +31,7 @@ const Pages = () => {
             if(id === levelId){
               setLevel(levelData);
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
-              const unsubscribe = onSnapshot(movementsIntRef, async (querySnapshotM) => {
+              const querySnapshotM = await getDocs(movementsIntRef);
                 console.log('2')
                 setLoading(true);
                 setCollectionRef(movementsIntRef);
@@ -68,16 +67,9 @@ const Pages = () => {
                 }
                 movements.sort((a, b) => a.progressive - b.progressive);
                 setMovements(movements);
-              });
-              unsubscribeMovements.push(unsubscribe);
             }
           });
-
-          await Promise.all(unsubscribeMovements);
           setLoading(false);
-          return () => {
-            unsubscribeMovements.forEach((unsubscribe: () => any) => unsubscribe());
-          }
         } else {
           console.error('Nessun utente autenticato.');
           setLoading(false);

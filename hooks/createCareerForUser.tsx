@@ -209,8 +209,6 @@ export default async function createCareerForUser(user: User, name: string, last
             username: '',
             points: 0
         });
-
-        console.log('Struttura del database creata con successo!');
     } catch (error) {
         console.error('Errore durante la creazione della struttura del database:', error);
     }

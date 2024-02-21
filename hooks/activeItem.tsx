@@ -8,8 +8,9 @@ interface Props {
     item: Level | Movement | SubMovement | SubSubMovement
 }
 
-export default async function activeItem({ collectionRef, item }: Props) {
+export default async function activeItem({ collectionRef, item }: Props): Promise<Level | Movement | SubMovement | SubSubMovement | undefined>  {
     try {
+        let res: Level | Movement | SubMovement | SubSubMovement = item;
         if (FIREBASE_AUTH.currentUser && collectionRef) {
             const querySnapshot = await getDocs(collectionRef);
             /**
@@ -29,17 +30,20 @@ export default async function activeItem({ collectionRef, item }: Props) {
              */
             let parentId;
 
+            const now = Timestamp.now();
+
             for (const docSnapshot of querySnapshot.docs) {
                 const data = docSnapshot.data() as Level | Movement | SubMovement | SubSubMovement;
                 if (item.id === docSnapshot.id) {
                     parentType = docSnapshot.ref.parent.id
                     parentId = data.parentId;
                     
-                    const now = Timestamp.now();
+                    
                     data.activationDate = now;
                     data.status = Constants.InProgres;
                     // Aggiorno l'item che ho checkato per attivarlo
-                    await updateDoc(docSnapshot.ref, data as any);      
+                    await updateDoc(docSnapshot.ref, data as any);   
+                    res = data;   
                 }
             }
 
@@ -49,6 +53,9 @@ export default async function activeItem({ collectionRef, item }: Props) {
                 const parentRef = doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser.uid, Constants.Career, parentId!);
                 const levelData = (await getDoc(parentRef)).data() as Level;
                 levelData.status = Constants.InProgres;
+                if(!levelData.activationDate){
+                    levelData.activationDate = now;
+                }
                 await updateDoc(parentRef, levelData as any);   
             // Caso in cui ho checkato un sottomovimento, quindi si dovrà aggiornare il movimento di 
             // riferimento
@@ -63,10 +70,17 @@ export default async function activeItem({ collectionRef, item }: Props) {
                         const movementData = qsm.data() as Movement;
                         if(qsm.id === parentId!){
                             movementData.status = Constants.InProgres;
+                            if(!movementData.activationDate){
+                                movementData.activationDate = now;
+                            }
                             //Aggiorno il movimento appena attivato
                             await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!, Constants.Movements, qsm.id), movementData as any);  
                             
                             levelDataL.status = Constants.InProgres;
+                            movementData.status = Constants.InProgres;
+                            if(!levelDataL.activationDate){
+                                levelDataL.activationDate = now;
+                            }
                             //Aggiorno il livello appena attivato
                             await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!), levelDataL as any); 
                             break; 
@@ -94,12 +108,21 @@ export default async function activeItem({ collectionRef, item }: Props) {
                                 
                                 //Semplice proporzione per trasformare la percentuale relativa dell'item figlia in perentuale assoluta, così da poter visualizzare la percentale corretta per item
                                 submovementData.status = Constants.InProgres;
+                                if(!submovementData.activationDate){
+                                    submovementData.activationDate = now;
+                                }
                                 await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!, Constants.Movements, qsm.id, Constants.SubMovements, qss.id), submovementData as any);   
                                 
                                 movementData.status = Constants.InProgres;
+                                if(!movementData.activationDate){
+                                    movementData.activationDate = now;
+                                }
                                 await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!, Constants.Movements, qsm.id), movementData as any);   
                                 
                                 levelDataL.status = Constants.InProgres;
+                                if(!levelDataL.activationDate){
+                                    levelDataL.activationDate = now;
+                                }
                                 await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!), levelDataL as any); 
 
                                 break;
@@ -109,6 +132,7 @@ export default async function activeItem({ collectionRef, item }: Props) {
                     }
                 }
             }
+            return res;
         }
     } catch (error) {
         console.error('Errore durante l\'attivazione dell\'item:', error);

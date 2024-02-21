@@ -8,8 +8,9 @@ interface Props {
     item: Level | Movement | SubMovement | SubSubMovement
 }
 
-export default async function completeItem({ collectionRef, item }: Props) {
+export default async function completeItem({ collectionRef, item }: Props): Promise<Level | Movement | SubMovement | SubSubMovement | undefined> {
     try {
+        let res: Level | Movement | SubMovement | SubSubMovement = item;
         if (FIREBASE_AUTH.currentUser && collectionRef) {
             const querySnapshot = await getDocs(collectionRef);
             let relativeCompletionPercentageItem = 0;
@@ -48,7 +49,8 @@ export default async function completeItem({ collectionRef, item }: Props) {
                     data.status = Constants.Completed;
                     data.completionPercentage = 100;
                     // Aggiorno l'item che ho checkato per completarlo
-                    await updateDoc(docSnapshot.ref, data as any);      
+                    await updateDoc(docSnapshot.ref, data as any);   
+                    res = data;   
 
                     const userRef = doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser.uid);
                     const user = (await getDoc(userRef)).data() as User;
@@ -199,6 +201,7 @@ export default async function completeItem({ collectionRef, item }: Props) {
                     }
                 }
             }
+            return res;
         }
     } catch (error) {
         console.error('Errore durante l\'aggiornamento dello stato dell\'item:', error);

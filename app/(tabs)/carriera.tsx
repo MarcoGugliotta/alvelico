@@ -73,20 +73,23 @@ export default function TabCarrieraScreen() {
 
   return (
     <FlatList
-      style={styles.container}
       data={levels}
       keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }) => <CareerItem key={item.id} prop={{               
-                                                                  type: 'movements',
-                                                                  item: item,
-                                                                  hrefPath: 'movements',
-                                                                  subItems: item.movements,
-                                                                  collectionRef: undefined}} />}
-      ListHeaderComponent={() => (
+      ListHeaderComponent={
         <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 30, marginTop: 10 }}>Carriera Windsurf</Text>
+      }
+      ListEmptyComponent={<Text>Nessun movimento trovato.</Text>}
+      renderItem={({ item }) => (
+        <CareerItem
+          prop={{
+            type: 'movements',
+            item: item,
+            hrefPath: 'movements',
+            subItems: item.movements,
+            collectionRef: undefined
+          }}
+        />
       )}
-      ListEmptyComponent={() => <Text>Nessun livello trovato.</Text>}
-      ListFooterComponent={() => loading && <Text>Loading...</Text>}
     />
   );
 }

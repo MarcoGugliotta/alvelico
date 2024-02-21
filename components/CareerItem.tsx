@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { defaultStyles } from '@/constants/Styles';
@@ -24,6 +24,8 @@ const CareerItem = ({ prop }: Props) => {
     const [isCheckedComplete, setIsCheckedComplete] = useState(false);
     const [isCheckedInProg, setIsCheckedInProg] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [item, setItem] = useState<Level | Movement | SubMovement | SubSubMovement>(prop['item']);
+    const [subItems, setSubItems] = useState<Level[] | Movement[] | SubMovement[] | SubSubMovement[] | undefined>(prop['subItems'])
     let subItemsLabel = "Sequenze";
     if (prop.type === 'movements') {
         subItemsLabel = "Movimenti";
@@ -33,33 +35,35 @@ const CareerItem = ({ prop }: Props) => {
         subItemsLabel = "Sotto Sequenze";
     }
 
-    const itemsCloned = prop['subItems'];
-    const item = prop['item'];
+    useEffect(() => {
+        setItem(prop.item);
+        setSubItems(prop.subItems);
+    }, [prop.item, prop.subItems]);
 
-    // Inverti lo stato di isChecked
     const toggleCheckComplete = async () => {
-        // Inverti lo stato di isChecked
-        await completeItem({collectionRef: prop['collectionRef']!, item: item})
+        item.id = prop.item.id
+        const itemRes = await completeItem({ collectionRef: prop.collectionRef!, item: item });
+        setItem(itemRes!);
         setIsCheckedComplete(!isCheckedComplete);
     };
 
     const toggleCheckInProg = async () => {
-        // Inverti lo stato di isChecked
-        await activeItem({collectionRef: prop['collectionRef']!, item: item})
+        const itemRes = await activeItem({ collectionRef: prop.collectionRef!, item: item });
+        setItem(itemRes!);
         setIsCheckedInProg(!isCheckedInProg);
     };
 
     return (
         <View key={item.id}>
             <View style={defaultStyles.constainerRow}>
-                {itemsCloned ? (
+                {subItems ? (
                 <View style={[defaultStyles.constainerRow, { flex: 1, padding: 24}]}>
                     <View style={{backgroundColor: 'yellow'}}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.label}</Text>
                         <Text style={{ fontSize: 15, fontWeight: 'bold' }}>Dettagli del Movimento:</Text>
                         <Text>Attivazione: {item.activationDate ? formatTimestampToString(item.activationDate) : '--/--/----'}</Text>
                         <Text>Completamento: {item.completionDate ? formatTimestampToString(item.completionDate) : '--/--/----'}</Text>
-                        <Text>{subItemsLabel} completate: {countCompletedItems(itemsCloned)}/{itemsCloned.length}</Text>
+                        <Text>{subItemsLabel} completate: {countCompletedItems(subItems)}/{subItems.length}</Text>
                         <Text>Punti: {item.points}</Text>
                         <Text style={{color: 'red'}}>{item.status}</Text>
                         {/*<Text>- {subItemsLabel} in progress: {countInProgressItems(itemsCloned)}/{itemsCloned.length}</Text>*/}
