@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text } from 'react-native';
 import { FIREBASE_DB, FIREBASE_AUTH } from '@/firebaseConfig';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { ScrollView } from 'react-native-gesture-handler';
+import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { Level, Movement } from '@/models/Models';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
@@ -21,30 +20,29 @@ export default function TabCarrieraScreen() {
           const userId = FIREBASE_AUTH.currentUser.uid;
           const q = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career);
           const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            console.log('1')
             const levelsDoc: Level[] = [];
-            querySnapshot.forEach((doc) => {
+            querySnapshot.forEach(async (doc) => {
               const levelData = doc.data() as Level;
               const levelId = doc.id;
               levelData.id = levelId;
               levelsDoc.push(levelData);
   
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
-              const unsubscribeM = onSnapshot(movementsIntRef, async (querySnapshotM) => {
-                const movements: Movement[] = [];
-                querySnapshotM.forEach((doc) => {
-                  const movementData = doc.data() as Movement;
-                  const movementId = doc.id;
+              const querySnapshotM = await getDocs(movementsIntRef);
+              const movements: Movement[] = [];
+              querySnapshotM.forEach((doc) => {
+                const movementData = doc.data() as Movement;
+                const movementId = doc.id;
 
-                  movementData.id = movementId;
-                  movements.push(movementData);
-                });
-                const index = levelsDoc.findIndex((level) => level.id === levelId);
-                if (index !== -1) {
-                  levelsDoc[index].movements = movements;
-                }
-                setMovements(movements);
+                movementData.id = movementId;
+                movements.push(movementData);
               });
-              unsubscribeMovements.push(unsubscribeM);
+              const index = levelsDoc.findIndex((level) => level.id === levelId);
+              if (index !== -1) {
+                levelsDoc[index].movements = movements;
+              }
+              setMovements(movements);
             });
 
             
@@ -74,26 +72,22 @@ export default function TabCarrieraScreen() {
   
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Carriera Windsurf</Text>
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : levels && FIREBASE_AUTH.currentUser ? (
-        <View style={{ flex: 1, gap: 15 }}>
-          {levels.map((level, index) => (
-            <CareerItem key={index} prop={{
-              type: 'movements',
-              item: level,
-              hrefPath: 'movements',
-              subItems: level.movements,
-              collectionRef: undefined
-            }}></CareerItem>
-          ))}
-        </View>
-      ) : (
-        <Text>Nessun livello trovato.</Text>
+    <FlatList
+      style={styles.container}
+      data={levels}
+      keyExtractor={(item, index) => index.toString()}
+      renderItem={({ item }) => <CareerItem key={item.id} prop={{               
+                                                                  type: 'movements',
+                                                                  item: item,
+                                                                  hrefPath: 'movements',
+                                                                  subItems: item.movements,
+                                                                  collectionRef: undefined}} />}
+      ListHeaderComponent={() => (
+        <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 30, marginTop: 10 }}>Carriera Windsurf</Text>
       )}
-    </ScrollView>
+      ListEmptyComponent={() => <Text>Nessun livello trovato.</Text>}
+      ListFooterComponent={() => loading && <Text>Loading...</Text>}
+    />
   );
 }
 

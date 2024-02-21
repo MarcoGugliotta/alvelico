@@ -94,6 +94,10 @@ export default async function completeItem({ collectionRef, item }: Props) {
 
                                 levelDataL.completionPercentage -= totRelativeCompletionPercentageItems;
                                 levelDataL.completionPercentage += movementData.relativeCompletionPercentage;
+                                if (Math.abs(levelDataL.completionPercentage - 100) <= 1) { 
+                                    levelDataL.completionPercentage = 100;
+                                    levelDataL.status = Constants.Completed;
+                                }
                                 await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!), levelDataL as any); 
                             }else{
                                 levelDataL.completionPercentage += relativeCompletionPercentageItem!;
@@ -161,12 +165,17 @@ export default async function completeItem({ collectionRef, item }: Props) {
                                         levelDataL.completionPercentage -= totRelativeCompletionPercentageMovements;
                                         //Aggiorno anche il livello di riferimento al movimento appena completato
                                         levelDataL.completionPercentage += movementData.relativeCompletionPercentage;
+                                        if (Math.abs(levelDataL.completionPercentage - 100) <= 1) { 
+                                            levelDataL.completionPercentage = 100;
+                                            levelDataL.status = Constants.Completed
+                                        }
                                         await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!), levelDataL as any); 
                                     }else{
                                         await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!, Constants.Movements, qsm.id), movementData as any);
                                         levelDataL.completionPercentage += relativeCompletionPercentageItem!;
                                         if (Math.abs(levelDataL.completionPercentage - 100) <= 1) { 
                                             levelDataL.completionPercentage = 100;
+                                            levelDataL.status = Constants.Completed
                                         }
                                         await updateDoc(doc(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser!.uid, Constants.Career, qsl.id!), levelDataL as any); 
                                     }

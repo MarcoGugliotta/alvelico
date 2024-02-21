@@ -33,6 +33,7 @@ const Pages = () => {
               setLevel(levelData);
               const movementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements);
               const unsubscribe = onSnapshot(movementsIntRef, async (querySnapshotM) => {
+                console.log('2')
                 setLoading(true);
                 setCollectionRef(movementsIntRef);
                 const movements: Movement[] = [];
@@ -44,23 +45,21 @@ const Pages = () => {
                   const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                   const querySnapshot = await getDocs(submovementsIntRef);
                   if(querySnapshot.size > 0){
-                    const unsubscribeSM = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
-                      setLoading(true);
-                      const submovements: SubMovement[] = [];
-                      querySnapshotSM.forEach((doc) => {
-                        const submovementData = doc.data() as SubMovement;
-                        const submovementId = doc.id;
-                        submovementData.id = submovementId;
-                        submovements.push(submovementData);
-                      });
-                      const index = movements.findIndex((movement) => movement.id === movementId);
-                      if (index !== -1) {
-                        movements[index].subMovements = submovements;
-                      }
-                      setSubMovements(submovements);
-                      setLoading(false)
+                    setLoading(true);
+                    const submovements: SubMovement[] = [];
+                    const querySnapshotSM = await getDocs(submovementsIntRef);
+                    querySnapshotSM.forEach((doc) => {
+                      const submovementData = doc.data() as SubMovement;
+                      const submovementId = doc.id;
+                      submovementData.id = submovementId;
+                      submovements.push(submovementData);
                     });
-                    unsubscribeMovements.push(unsubscribeSM);
+                    const index = movements.findIndex((movement) => movement.id === movementId);
+                    if (index !== -1) {
+                      movements[index].subMovements = submovements;
+                    }
+                    setSubMovements(submovements);
+                    setLoading(false)
                   }
                 });
                 const index = movements.findIndex((level) => level.id === levelId);

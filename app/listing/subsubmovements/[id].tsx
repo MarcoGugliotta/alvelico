@@ -57,6 +57,7 @@ const Pages = () => {
                             setCollectionRef(subsubmovementsIntRef);
                             if(querySnapshotSSM.size > 0){
                                 const unsubscribe = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
+                                  console.log('4')
                                     const subsubmovements: SubSubMovement[] = [];
                                     querySnapshotSSM.forEach(async (doc) => {
                                         const subsubmovementData = doc.data() as SubSubMovement;

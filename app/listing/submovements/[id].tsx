@@ -48,6 +48,7 @@ const Pages = () => {
                 setCollectionRef(submovementsIntRef);
                 if(querySnapshotSM.size > 0){
                   const unsubscribe = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
+                    console.log('3')
                     const submovements: SubMovement[] = [];
                     querySnapshotSM.forEach(async (doc) => {
                       const submovementData = doc.data() as SubMovement;
@@ -59,21 +60,19 @@ const Pages = () => {
                       const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
   
                       if(querySnapshotSSM.size > 0){
-                        const unsubscribeSSM = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
-                          const subsubmovements: SubSubMovement[] = [];
-                          querySnapshotSSM.forEach(async (doc) => {
-                            const subsubmovementData = doc.data() as SubSubMovement;
-                            const subsubmovementId = doc.id;
-                            subsubmovementData.id = subsubmovementId;
-                            subsubmovements.push(subsubmovementData);
-                          });
-                          const index = submovements.findIndex((submovement) => submovement.id === submovementId);
-                          if (index !== -1) {
-                            submovements[index].subSubMovements = subsubmovements;
-                          }
-                          setSubSubMovements(subsubmovements);
+                        const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
+                        const subsubmovements: SubSubMovement[] = [];
+                        querySnapshotSSM.forEach(async (doc) => {
+                          const subsubmovementData = doc.data() as SubSubMovement;
+                          const subsubmovementId = doc.id;
+                          subsubmovementData.id = subsubmovementId;
+                          subsubmovements.push(subsubmovementData);
                         });
-                        unsubscribeMovements.push(unsubscribeSSM);
+                        const index = submovements.findIndex((submovement) => submovement.id === submovementId);
+                        if (index !== -1) {
+                          submovements[index].subSubMovements = subsubmovements;
+                        }
+                        setSubSubMovements(subsubmovements);
                       }
                     });
                     const index = movements.findIndex((movement) => movement.id === movementId);
