@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { Text, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
-import { CollectionReference, DocumentData, collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
 
@@ -13,7 +13,6 @@ const Pages = () => {
   const [submovements, setSubMovements] = useState<SubMovement[] | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [collectionRef, setCollectionRef] = useState<CollectionReference<DocumentData, DocumentData> | null>(null)
 
   useEffect(() => {
     const fetchLevelData = async () => {
@@ -44,45 +43,42 @@ const Pages = () => {
                 setMovement(movementData);
                 const submovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements);
                 const querySnapshotSM = await getDocs(submovementsIntRef);
-  
-                setCollectionRef(submovementsIntRef);
+
                 if(querySnapshotSM.size > 0){
-                  const unsubscribe = onSnapshot(submovementsIntRef, async (querySnapshotSM) => {
-                    console.log('3')
-                    const submovements: SubMovement[] = [];
-                    querySnapshotSM.forEach(async (doc) => {
-                      const submovementData = doc.data() as SubMovement;
-                      const submovementId = doc.id;
-                      submovementData.id = submovementId;
-                      submovements.push(submovementData);
-  
-                      const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
+                  console.log('3')
+                  const submovements: SubMovement[] = [];
+                  querySnapshotSM.forEach(async (doc) => {
+                    const submovementData = doc.data() as SubMovement;
+                    const submovementId = doc.id;
+                    submovementData.ref = doc.ref;
+                    submovementData.id = submovementId;
+                    submovements.push(submovementData);
+
+                    const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
+                    const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
+
+                    if(querySnapshotSSM.size > 0){
                       const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
-  
-                      if(querySnapshotSSM.size > 0){
-                        const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
-                        const subsubmovements: SubSubMovement[] = [];
-                        querySnapshotSSM.forEach(async (doc) => {
-                          const subsubmovementData = doc.data() as SubSubMovement;
-                          const subsubmovementId = doc.id;
-                          subsubmovementData.id = subsubmovementId;
-                          subsubmovements.push(subsubmovementData);
-                        });
-                        const index = submovements.findIndex((submovement) => submovement.id === submovementId);
-                        if (index !== -1) {
-                          submovements[index].subSubMovements = subsubmovements;
-                        }
-                        setSubSubMovements(subsubmovements);
+                      const subsubmovements: SubSubMovement[] = [];
+                      querySnapshotSSM.forEach(async (doc) => {
+                        const subsubmovementData = doc.data() as SubSubMovement;
+                        const subsubmovementId = doc.id;
+                        subsubmovementData.id = subsubmovementId;
+                        subsubmovements.push(subsubmovementData);
+                      });
+                      const index = submovements.findIndex((submovement) => submovement.id === submovementId);
+                      if (index !== -1) {
+                        submovements[index].subSubMovements = subsubmovements;
                       }
-                    });
-                    const index = movements.findIndex((movement) => movement.id === movementId);
-                    if (index !== -1) {
-                      movements[index].subMovements = submovements;
+                      setSubSubMovements(subsubmovements);
                     }
-                    submovements.sort((a, b) => a.progressive - b.progressive);
-                    setSubMovements(submovements);
                   });
-                  unsubscribeMovements.push(unsubscribe);
+                  const index = movements.findIndex((movement) => movement.id === movementId);
+                  if (index !== -1) {
+                    movements[index].subMovements = submovements;
+                  }
+                  submovements.sort((a, b) => a.progressive - b.progressive);
+                  setSubMovements(submovements);
                 }
               }
           });
@@ -119,10 +115,8 @@ const Pages = () => {
         <CareerItem
           prop={{
             type: 'subsubmovements',
-            item: item,
+            itemRef: item.ref!,
             hrefPath: 'subsubmovements',
-            subItems: item.subSubMovements,
-            collectionRef: collectionRef!
           }}
         />
       )}

@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { DocumentData, DocumentReference, Timestamp } from "firebase/firestore";
 
 class Level {
   id?: string;
@@ -8,13 +8,24 @@ class Level {
   completionDate: Timestamp | null;
   movements: Movement[];
   completionPercentage: number;
+  relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
-  points?: number
+  points?: number;
+  ref?: DocumentReference<DocumentData, DocumentData>;
+  hasSubItems?: boolean;
+  numSubItems?: number;
+  numSubItemsCompleted?: number;
+  numSubItemsInProgress?: number;
 
   constructor(id?: string, label?: string, status?: string, activationDate?: Timestamp | null,
-    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, progressive?: number, parentId?: string,
-    points?: number) {
+    completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, relativeCompletionPercentage?: number, progressive?: number, parentId?: string,
+    points?: number, ref?: DocumentReference<DocumentData, DocumentData>,
+    hasSubItems?: boolean,
+    numSubItems?: number,
+    numSubItemsCompleted?: number,
+    numSubItemsInProgress?: number,
+    ) {
       this.id = id;
       this.label = label || '';
       this.status = status || '';
@@ -22,9 +33,15 @@ class Level {
       this.completionDate = completionDate || null;
       this.movements = movements || [];
       this.completionPercentage = completionPercentage || 0;
+      this.relativeCompletionPercentage = relativeCompletionPercentage || 0;
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
+      this.ref = ref || undefined;
+      this.hasSubItems = hasSubItems;
+      this.numSubItems = numSubItems;
+      this.numSubItemsCompleted = numSubItemsCompleted;
+      this.numSubItemsInProgress = numSubItemsInProgress;
   }
 }
 
@@ -41,6 +58,11 @@ class Movement {
   progressive: number;
   parentId?: string;
   points?: number;
+  ref?: DocumentReference<DocumentData, DocumentData>;
+  hasSubItems?: boolean;
+  numSubItems?: number;
+  numSubItemsCompleted?: number;
+  numSubItemsInProgress?: number;
 
   constructor(
       id?: string,
@@ -54,7 +76,12 @@ class Movement {
       relativeCompletionPercentage?: number,
       progressive?: number,
       parentId?: string,
-      points?: number
+      points?: number,
+      ref?: DocumentReference<DocumentData, DocumentData>,
+      hasSubItems?: boolean,
+      numSubItems?: number,
+      numSubItemsCompleted?: number,
+      numSubItemsInProgress?: number,
   ) {
       this.id = id;
       this.label = label || '';
@@ -68,6 +95,11 @@ class Movement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
+      this.ref = ref || undefined;
+      this.hasSubItems = hasSubItems;
+      this.numSubItems = numSubItems;
+      this.numSubItemsCompleted = numSubItemsCompleted;
+      this.numSubItemsInProgress = numSubItemsInProgress;
   }
 }
 
@@ -83,8 +115,12 @@ class SubMovement {
   relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
-  points?: number
-
+  points?: number;
+  ref?: DocumentReference<DocumentData, DocumentData>;
+  hasSubItems?: boolean;
+  numSubItems?: number;
+  numSubItemsCompleted?: number;
+  numSubItemsInProgress?: number;
   constructor(
       id?: string,
       label?: string,
@@ -97,7 +133,12 @@ class SubMovement {
       relativeCompletionPercentage?: number,
       progressive?: number, 
       parentId?: string,
-      points?: number
+      points?: number,
+      ref?: DocumentReference<DocumentData, DocumentData>,
+      hasSubItems?: boolean,
+      numSubItems?: number,
+      numSubItemsCompleted?: number,
+      numSubItemsInProgress?: number,
   ) {
       this.id = id;
       this.label = label || '';
@@ -111,6 +152,11 @@ class SubMovement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
+      this.ref = ref || undefined;
+      this.hasSubItems = hasSubItems;
+      this.numSubItems = numSubItems;
+      this.numSubItemsCompleted = numSubItemsCompleted;
+      this.numSubItemsInProgress = numSubItemsInProgress;
   }
 }
 
@@ -125,7 +171,12 @@ class SubSubMovement {
   relativeCompletionPercentage: number;
   progressive: number;
   parentId?: string;
-  points?: number
+  points?: number;
+  ref?: DocumentReference<DocumentData, DocumentData>;
+  hasSubItems?: boolean;
+  numSubItems?: number;
+  numSubItemsCompleted?: number;
+  numSubItemsInProgress?: number;
 
   constructor(
       id?: string,
@@ -138,7 +189,12 @@ class SubSubMovement {
       relativeCompletionPercentage?: number,
       progressive?: number, 
       parentId?: string,
-      points?: number
+      points?: number,
+      ref?: DocumentReference<DocumentData, DocumentData>,
+      hasSubItems?: boolean,
+      numSubItems?: number,
+      numSubItemsCompleted?: number,
+      numSubItemsInProgress?: number,
   ) {
       this.id = id;
       this.label = label || '';
@@ -151,6 +207,11 @@ class SubSubMovement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
+      this.ref = ref || undefined;
+      this.hasSubItems = hasSubItems;
+      this.numSubItems = numSubItems;
+      this.numSubItemsCompleted = numSubItemsCompleted;
+      this.numSubItemsInProgress = numSubItemsInProgress;
   }
 }
 
@@ -184,4 +245,14 @@ class User {
 }
 
 
-export { Level, Movement, SubMovement, SubSubMovement, User };
+class Career {
+  levels: Level[]
+
+  constructor(
+    levels: Level[]
+  ) {
+      this.levels = levels || [];
+  }
+}
+
+export { Level, Movement, SubMovement, SubSubMovement, User, Career };

@@ -10,7 +10,7 @@ export enum Constants {
     Boards = 'boards',
     Sails = 'sails',
     NotActive = 'not_active',
-    InProgres = 'in_progress',
+    InProgress = 'in_progress',
     Completed = 'completed',
 
 }

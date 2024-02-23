@@ -12,7 +12,6 @@ const Pages = () => {
   const [submovement, setSubMovement] = useState<SubMovement | null>(null);
   const [subsubmovements, setSubSubMovements] = useState<SubSubMovement[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [collectionRef, setCollectionRef] = useState<CollectionReference<DocumentData, DocumentData> | null>(null)
 
   useEffect(() => {
     const fetchLevelData = async () => {
@@ -54,24 +53,21 @@ const Pages = () => {
                             setSubMovement(submovementData);
                             const subsubmovementsIntRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelId, Constants.Movements, movementId, Constants.SubMovements, submovementId, Constants.SubSubMovements);
                             const querySnapshotSSM = await getDocs(subsubmovementsIntRef);
-                            setCollectionRef(subsubmovementsIntRef);
                             if(querySnapshotSSM.size > 0){
-                                const unsubscribe = onSnapshot(subsubmovementsIntRef, async (querySnapshotSSM) => {
-                                  console.log('4')
-                                    const subsubmovements: SubSubMovement[] = [];
-                                    querySnapshotSSM.forEach(async (doc) => {
-                                        const subsubmovementData = doc.data() as SubSubMovement;
-                                        const subsubmovementId = doc.id;
-                                        subsubmovementData.id = subsubmovementId;
-                                        subsubmovements.push(subsubmovementData);
-                                    });
-                                    const index = submovements.findIndex((submovement) => submovement.id === submovementId);
-                                    if (index !== -1) {
-                                        submovements[index].subSubMovements = subsubmovements;
-                                    }                          
-                                    setSubSubMovements(subsubmovements);
+                                console.log('4')
+                                const subsubmovements: SubSubMovement[] = [];
+                                querySnapshotSSM.forEach(async (doc) => {
+                                    const subsubmovementData = doc.data() as SubSubMovement;
+                                    const subsubmovementId = doc.id;
+                                    subsubmovementData.ref = doc.ref;
+                                    subsubmovementData.id = subsubmovementId;
+                                    subsubmovements.push(subsubmovementData);
                                 });
-                                unsubscribeMovements.push(unsubscribe);
+                                const index = submovements.findIndex((submovement) => submovement.id === submovementId);
+                                if (index !== -1) {
+                                    submovements[index].subSubMovements = subsubmovements;
+                                }                          
+                                setSubSubMovements(subsubmovements);
                             }
                         }
                     });
@@ -113,10 +109,8 @@ const Pages = () => {
         <CareerItem
           prop={{
             type: 'subsubmovements',
-            item: item,
+            itemRef: item.ref!,
             hrefPath: undefined,
-            subItems: undefined,
-            collectionRef: collectionRef!
           }}
         />
       )}
