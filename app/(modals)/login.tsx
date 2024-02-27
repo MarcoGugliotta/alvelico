@@ -1,16 +1,13 @@
 import { View, Text, StyleSheet, TextInput } from 'react-native'
 import React, { useState } from 'react'
-import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig'
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { FIREBASE_AUTH } from '@/firebaseConfig'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { defaultStyles } from '@/constants/Styles';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { collection, doc } from 'firebase/firestore';
-import createCareerForUser from '@/hooks/createCareerForUser';
 import generateCareer from '@/hooks/generateCareer';
-import fetchAndSaveCareerData from '@/hooks/fetchAndSaveCareerData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const Page = () => {
@@ -37,12 +34,9 @@ const Page = () => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email.value, password.value);
             alert('Controlla la tua email!');
-
-            console.log('genera')
+            console.log('inizio creazione carriera')
             await generateCareer(response.user, name.value, lastname.value);
-            console.log('fine genera')
-            await fetchAndSaveCareerData(response.user);
-            console.log('fine fetch')
+            console.log('fine creazione carriera')
         } catch (error: any) {
             alert('Registrazione fallita: ' + error.message);
         } finally {
@@ -57,6 +51,7 @@ const Page = () => {
     const logout = async () => {
         setLoading(true);
         try {
+            await AsyncStorage.clear();
             await auth.signOut();
             alert('Sign out successo: ' + auth.currentUser)
         } catch (error: any) {

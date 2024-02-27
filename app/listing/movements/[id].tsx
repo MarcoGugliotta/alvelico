@@ -7,10 +7,10 @@ import { collection, getDocs } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import CareerItem from '@/components/CareerItem';
 import { useRoute } from '@react-navigation/native';
+import fetchMovementsFromStorage from '@/hooks/fetchMovementsFromStorage';
 
 const Pages = () => {
   const { id, item } = useLocalSearchParams<{ id: string, item: string }>();
-  const [level, setLevel] = useState<Level | null>(null);
   const [movements, setMovements] = useState<Movement[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,21 +21,10 @@ const Pages = () => {
     const fetchLevelData = async () => {
       try {
         setLoading(true);
-        if (FIREBASE_AUTH.currentUser && parsedItem?.id) {
-          const movementsIntRef = collection(FIREBASE_DB, Constants.Users, FIREBASE_AUTH.currentUser.uid, Constants.Career, parsedItem.id, Constants.Movements);
-          const querySnapshotM = await getDocs(movementsIntRef);
-            console.log('2')
-            setLoading(true);
-            const movements: Movement[] = [];
-            querySnapshotM.forEach(async (doc) => {
-              const movementData = doc.data() as Movement;
-              const movementId = doc.id;
-              movementData.ref = doc.ref;
-              movementData.id = movementId;
-              movements.push(movementData);
-            });
-            movements.sort((a, b) => a.progressive - b.progressive);
-            setMovements(movements);
+        if (FIREBASE_AUTH.currentUser) {
+          let movementsData = await fetchMovementsFromStorage(FIREBASE_AUTH.currentUser, item);
+          movementsData!.sort((a, b) => a.progressive - b.progressive);
+          setMovements(movementsData!);
           setLoading(false);
         } else {
           console.error('Nessun utente autenticato.');
@@ -64,7 +53,7 @@ const Pages = () => {
           prop={{
             type: 'submovements',
             hrefPath: 'submovements',
-            itemRef: item.ref!
+            itemRefPath: item.ref!
           }}
         />
       )}

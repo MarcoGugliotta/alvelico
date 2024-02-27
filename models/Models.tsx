@@ -12,7 +12,7 @@ class Level {
   progressive: number;
   parentId?: string;
   points?: number;
-  ref?: DocumentReference<DocumentData, DocumentData>;
+  ref?: string;
   hasSubItems?: boolean;
   numSubItems?: number;
   numSubItemsCompleted?: number;
@@ -20,7 +20,7 @@ class Level {
 
   constructor(id?: string, label?: string, status?: string, activationDate?: Timestamp | null,
     completionDate?: Timestamp | null, movements?: Movement[], completionPercentage?: number, relativeCompletionPercentage?: number, progressive?: number, parentId?: string,
-    points?: number, ref?: DocumentReference<DocumentData, DocumentData>,
+    points?: number, ref?: string,
     hasSubItems?: boolean,
     numSubItems?: number,
     numSubItemsCompleted?: number,
@@ -37,7 +37,7 @@ class Level {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
-      this.ref = ref || undefined;
+      this.ref = ref || '';
       this.hasSubItems = hasSubItems;
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;
@@ -58,11 +58,13 @@ class Movement {
   progressive: number;
   parentId?: string;
   points?: number;
-  ref?: DocumentReference<DocumentData, DocumentData>;
+  ref?: string;
   hasSubItems?: boolean;
   numSubItems?: number;
   numSubItemsCompleted?: number;
   numSubItemsInProgress?: number;
+    board: any;
+    sail: any;
 
   constructor(
       id?: string,
@@ -77,7 +79,7 @@ class Movement {
       progressive?: number,
       parentId?: string,
       points?: number,
-      ref?: DocumentReference<DocumentData, DocumentData>,
+      ref?: string,
       hasSubItems?: boolean,
       numSubItems?: number,
       numSubItemsCompleted?: number,
@@ -95,7 +97,7 @@ class Movement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
-      this.ref = ref || undefined;
+      this.ref = ref || '';
       this.hasSubItems = hasSubItems;
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;
@@ -116,7 +118,7 @@ class SubMovement {
   progressive: number;
   parentId?: string;
   points?: number;
-  ref?: DocumentReference<DocumentData, DocumentData>;
+  ref?: string;
   hasSubItems?: boolean;
   numSubItems?: number;
   numSubItemsCompleted?: number;
@@ -134,7 +136,7 @@ class SubMovement {
       progressive?: number, 
       parentId?: string,
       points?: number,
-      ref?: DocumentReference<DocumentData, DocumentData>,
+      ref?: string,
       hasSubItems?: boolean,
       numSubItems?: number,
       numSubItemsCompleted?: number,
@@ -152,7 +154,7 @@ class SubMovement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
-      this.ref = ref || undefined;
+      this.ref = ref || '';
       this.hasSubItems = hasSubItems;
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;
@@ -172,7 +174,7 @@ class SubSubMovement {
   progressive: number;
   parentId?: string;
   points?: number;
-  ref?: DocumentReference<DocumentData, DocumentData>;
+  ref?: string;
   hasSubItems?: boolean;
   numSubItems?: number;
   numSubItemsCompleted?: number;
@@ -190,7 +192,7 @@ class SubSubMovement {
       progressive?: number, 
       parentId?: string,
       points?: number,
-      ref?: DocumentReference<DocumentData, DocumentData>,
+      ref?: string,
       hasSubItems?: boolean,
       numSubItems?: number,
       numSubItemsCompleted?: number,
@@ -207,7 +209,7 @@ class SubSubMovement {
       this.progressive = progressive || 0;
       this.parentId = parentId || '';
       this.points = points || 0;
-      this.ref = ref || undefined;
+      this.ref = ref || '';
       this.hasSubItems = hasSubItems;
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;

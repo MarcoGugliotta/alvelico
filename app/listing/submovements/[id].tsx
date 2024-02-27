@@ -50,7 +50,6 @@ const Pages = () => {
                   querySnapshotSM.forEach(async (doc) => {
                     const submovementData = doc.data() as SubMovement;
                     const submovementId = doc.id;
-                    submovementData.ref = doc.ref;
                     submovementData.id = submovementId;
                     submovements.push(submovementData);
 
@@ -115,8 +114,8 @@ const Pages = () => {
         <CareerItem
           prop={{
             type: 'subsubmovements',
-            itemRef: item.ref!,
             hrefPath: 'subsubmovements',
+            itemRefPath: item.ref!,
           }}
         />
       )}

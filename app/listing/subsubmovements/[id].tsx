@@ -59,7 +59,6 @@ const Pages = () => {
                                 querySnapshotSSM.forEach(async (doc) => {
                                     const subsubmovementData = doc.data() as SubSubMovement;
                                     const subsubmovementId = doc.id;
-                                    subsubmovementData.ref = doc.ref;
                                     subsubmovementData.id = subsubmovementId;
                                     subsubmovements.push(subsubmovementData);
                                 });
@@ -109,8 +108,8 @@ const Pages = () => {
         <CareerItem
           prop={{
             type: 'subsubmovements',
-            itemRef: item.ref!,
             hrefPath: undefined,
+            itemRefPath: item.ref!,
           }}
         />
       )}

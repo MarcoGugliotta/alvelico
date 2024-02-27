@@ -2,20 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { defaultStyles } from '@/constants/Styles';
-import { formatTimestampToString, countCompletedItems } from '@/hooks/utils';
+import { formatTimestampToString } from '@/hooks/utils';
 import { AntDesign } from '@expo/vector-icons';
-import { CollectionReference, DocumentData, DocumentReference, collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { Constants } from '@/constants/Strings';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
-import activeItem from '@/hooks/activeItem';
 import completeItem from '@/hooks/completeItem';
+import activeItem from '@/hooks/activeItem';
 
 interface Props {
   prop: {
     type: string,
     hrefPath: string | undefined,
-    itemRef: DocumentReference<DocumentData, DocumentData>,
+    itemRefPath: string,
   };
 }
 
@@ -35,8 +35,8 @@ const CareerItem = ({ prop }: Props) => {
   }
 
   useEffect(() => {
-    if (FIREBASE_AUTH.currentUser) {
-      const unsubscribe = onSnapshot(doc(FIREBASE_DB, prop.itemRef.path), async snapshot => {
+    if (FIREBASE_AUTH.currentUser  && prop.itemRefPath) {
+      const unsubscribe = onSnapshot(doc(FIREBASE_DB, prop.itemRefPath), async snapshot => {
         const itemData = snapshot.data() as Level | Movement | SubMovement | SubSubMovement;
         itemData!.id = snapshot.id;
         setItem(itemData);
@@ -47,12 +47,12 @@ const CareerItem = ({ prop }: Props) => {
   }, []);
 
   const toggleCheckComplete = async () => {
-    await completeItem({ itemRef: prop.itemRef})
+    await completeItem({ ref: prop.itemRefPath})
     setIsCheckedComplete(!isCheckedComplete);
   };
 
   const toggleCheckInProg = async () => {
-    await activeItem({ itemRef: prop.itemRef})
+    await activeItem({ ref: prop.itemRefPath})
     setIsCheckedInProg(!isCheckedInProg);
   };
 
@@ -75,7 +75,7 @@ const CareerItem = ({ prop }: Props) => {
                     </View>
                     <View style={{backgroundColor: 'yellow'}}>
                         <Text style={{ fontSize: 30 }}>{item!.completionPercentage}%</Text>
-                        <Link style={{ fontSize: 38 }} href={{ ...( { pathname: `/listing/${prop['hrefPath']}/${prop['itemRef'].id}`, params: { item: JSON.stringify(item)} } as any) }}>{`>`}</Link>
+                        <Link style={{ fontSize: 38 }} href={{ ...( { pathname: `/listing/${prop['hrefPath']}/${item.id}`, params: { item: JSON.stringify(item.ref)} } as any) }}>{`>`}</Link>
                     </View>
                 </View>
                 ) : 

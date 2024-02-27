@@ -1,85 +1,22 @@
-import { collection, addDoc, doc, setDoc, Timestamp, CollectionReference, DocumentReference, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig'; 
 import { User } from 'firebase/auth';
 import { Constants } from '@/constants/Strings';
 import { Board, Sail, addBoards, addSails } from './generalGeneration';
+import { Career, Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Level {
-    id: string;
-    label: string;
-    activationDate: Date | null;
-    completionDate: Date | null;
-    movements: Movement[];
-    completionPercentage: number;
-    progressive: number;
-    points: number;
-    status: string;
-    hasSubItems: boolean;
-    numSubItems: number;
-    numSubItemsCompleted: number;
-    numSubItemsInProgress: number;
-}
-
-interface Movement {
-    id: string;
-    label: string;
-    status: string;
-    activationDate: Date | null;
-    completionDate: Date | null;
-    subMovements?: SubMovement[];
-    completionPercentage: number;
-    relativeCompletionPercentage: number;
-    progressive: number;
-    board: Board | null;
-    sail: Sail | null;
-    points: number;
-    parentId?: string;
-    hasSubItems: boolean;
-    numSubItems: number;
-    numSubItemsCompleted: number;
-    numSubItemsInProgress: number;
-}
-
-interface SubMovement {
-    id: string;
-    label: string;
-    status: string;
-    activationDate: Date | null;
-    completionDate: Date | null;
-    subSubMovements?: SubSubMovement[];
-    completionPercentage: number;
-    relativeCompletionPercentage: number;
-    progressive: number;
-    points: number;
-    parentId?: string;
-    hasSubItems: boolean;
-    numSubItems: number;
-    numSubItemsCompleted: number;
-    numSubItemsInProgress: number;
-}
-
-interface SubSubMovement {
-    id: string;
-    label: string;
-    status: string;
-    activationDate: Date | null;
-    completionDate: Date | null;
-    completionPercentage: number;
-    relativeCompletionPercentage: number;
-    progressive: number;
-    points: number;
-    parentId?: string;
-    hasSubItems: boolean;
-    numSubItems: number;
-    numSubItemsCompleted: number;
-    numSubItemsInProgress: number;
-}
 
 const auth = FIREBASE_AUTH;
 
 export default async function generateCareer(user: User, name: string, lastname: string): Promise<void>{
     try{
         const userId = auth.currentUser!.uid;
+
+        await AsyncStorage.clear();
+        const careerData: Career = {
+            levels: [],
+        };
 
         await setDoc(doc(FIREBASE_DB, Constants.Users, userId), {
             userName: 'Guglio89',
@@ -89,19 +26,22 @@ export default async function generateCareer(user: User, name: string, lastname:
             avatarUrl: user.photoURL,
             points: 0
         });
-        await addLevels(userId, beginnerLevel);
-        await addLevels(userId, intermediateLevel);
-        await addLevels(userId, advancedLevel);
+
+        await addLevels(userId, beginnerLevel, careerData);
+        await addLevels(userId, intermediateLevel, careerData);
+        await addLevels(userId, advancedLevel, careerData);
         addBoards(boards);
         addSails(sails);
 
-        console.log('fine generazione carriera')
+        console.log('fine generazione carriera');
+
+        await AsyncStorage.setItem('careerData', JSON.stringify(careerData));
     } catch (error) {
         console.error('Errore durante la creazione della struttura del database:', error);
     }
 }
 
-const addLevels = async (userId: string, level: Level) => {
+const addLevels = async (userId: string, level: Level, careerData: Career) => {
     try{
         const levelRef = await addDoc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), {
             label: level.label,
@@ -116,6 +56,18 @@ const addLevels = async (userId: string, level: Level) => {
             numSubItemsInProgress: level.numSubItemsInProgress,
         });
         level.id = levelRef.id;
+        level.ref = levelRef.path;
+
+        const levelData: Level = {
+            ...level,
+            movements: [],
+        };
+
+        careerData.levels.push(levelData);
+
+        await updateDoc(doc(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id), {
+            ref: levelRef.path
+        });
 
         await Promise.all(level.movements.map(async (movement) => {
             const movementRef = await addDoc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id, Constants.Movements), {
@@ -133,9 +85,17 @@ const addLevels = async (userId: string, level: Level) => {
                 hasSubItems: movement.hasSubItems,
                 numSubItems: movement.numSubItems,
                 numSubItemsCompleted: movement.numSubItemsCompleted,
-                numSubItemsInProgress: movement.numSubItemsInProgress,
+                numSubItemsInProgress: movement.numSubItemsInProgress
             });
             movement.id = movementRef.id;
+            movement.ref = movementRef.path;
+
+            const movementData: Movement = {
+                ...movement,
+                subMovements: [],
+            };
+
+            levelData.movements.push(movementData);
 
             if (movement.subMovements) {
                 await Promise.all(movement.subMovements.map(async (subMovement) => {
@@ -155,6 +115,14 @@ const addLevels = async (userId: string, level: Level) => {
                         numSubItemsInProgress: subMovement.numSubItemsInProgress,
                     });
                     subMovement.id = subMovementRef.id;
+                    subMovement.ref = subMovementRef.path;
+
+                    const subMovementData: SubMovement = {
+                        ...subMovement,
+                        subSubMovements: [],
+                    };
+
+                    movementData.subMovements!.push(subMovementData);
 
                     if (subMovement.subSubMovements) {
                         await Promise.all(subMovement.subSubMovements.map(async (subSubMovement) => {
@@ -174,13 +142,21 @@ const addLevels = async (userId: string, level: Level) => {
                                 numSubItemsInProgress: subSubMovement.numSubItemsInProgress,
                             });
                             subSubMovement.id = subSubMovementRef.id;
+                            subSubMovement.ref = subSubMovementRef.path;
+
+                            const subSubMovementData: SubSubMovement = {
+                                ...subSubMovement,
+                            };
+
+                            subMovementData.subSubMovements!.push(subSubMovementData);
                         }));
                     }
                 }));
             }
         }));
-        
-        // Ripeti lo stesso processo per gli altri livelli intermediate e advanced
+
+        // Salva l'oggetto careerData aggiornato nell'Async Storage
+        await AsyncStorage.setItem('careerData', JSON.stringify(careerData));
     } catch(error) {
         console.error('Errore durante l\'aggiunta dei livelli:', error);
     }
@@ -198,7 +174,8 @@ const beginnerLevel: Level = {
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Trasporto del materiale', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, board: null, sail: null, points: 60,
@@ -208,27 +185,31 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Trasportare tavola e rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Appoggiare il materiale per terra', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 5,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Partenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: null, sail: null, points: 160,
@@ -238,34 +219,39 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Posizione a T', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 30,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Posizione base', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 50,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Posizione d’andatura', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 4, points: 70,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 4,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Rotazione della tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: null, sail: null, points: 120,
@@ -275,20 +261,23 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Rotazione di poppa', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 2,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Controllo della velocità', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 9, progressive: 5, board: null, sail: null, points: 90,
@@ -298,27 +287,31 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Decelerare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Frenare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 3, points: 50,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 6, board: null, sail: null, points: 100,
@@ -328,34 +321,39 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Puggiare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 2,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Rientrare in situazioni di emergenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 7, board: null, sail: null, points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Regole di precedenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: null, sail: null, points: 30,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Teoria del vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 9, board: null, sail: null, points: 60,
@@ -365,27 +363,31 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Orientarsi correttamente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 15,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Vento apparente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Andature', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 10, board: null, sail: null, points: 200,
@@ -395,34 +397,39 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Bolina', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 100,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Lasco', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 3, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Poppa', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 4, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 4,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Abitudini fondamentali', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 11, board: null, sail: null, points: 60,
@@ -432,34 +439,39 @@ const beginnerLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Salvataggio appeso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Salvataggio del tennista', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Armare la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 12, board: null, sail: null, points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         }
     ],
     progressive: 1,
@@ -468,7 +480,8 @@ const beginnerLevel: Level = {
     hasSubItems: true,
     numSubItems: 12,
     numSubItemsCompleted: 0,
-    numSubItemsInProgress: 0
+    numSubItemsInProgress: 0,
+    relativeCompletionPercentage: 0
 };
 
 const intermediateLevel: Level = {
@@ -483,14 +496,16 @@ const intermediateLevel: Level = {
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Centro velico e centro di deriva', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 2, board: null, sail: null, points: 20,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Strambata Pivot', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: null, sail: null, points: 320,
@@ -500,34 +515,39 @@ const intermediateLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Gira i piedi', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Gira la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Curva sopravento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 4,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Virata Veloce', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: null, sail: null, points: 240,
@@ -537,34 +557,39 @@ const intermediateLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Passaggio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Uscita: curvare sottovento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 3, points: 120,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Trapezio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 5, board: null, sail: null, points: 300,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Planare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 40, progressive: 6, board: null, sail: null, points: 800,
@@ -574,14 +599,16 @@ const intermediateLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Mantenere la planata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 2, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Pompare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 3, points: 160,
@@ -591,20 +618,23 @@ const intermediateLevel: Level = {
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
-                            numSubItemsInProgress: 0
+                            numSubItemsInProgress: 0,
+                            difficulty: 0
                         },
                         {
                             id: '', label: 'Pompa e saltella', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
-                            numSubItemsInProgress: 0
+                            numSubItemsInProgress: 0,
+                            difficulty: 0
                         }
                     ],
                     hasSubItems: true,
                     numSubItems: 2,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
@@ -614,47 +644,54 @@ const intermediateLevel: Level = {
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
-                            numSubItemsInProgress: 0
+                            numSubItemsInProgress: 0,
+                            difficulty: 0
                         },
                         {
                             id: '', label: 'Girare con imbardata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
-                            numSubItemsInProgress: 0
+                            numSubItemsInProgress: 0,
+                            difficulty: 0
                         }
                     ],
                     hasSubItems: true,
                     numSubItems: 2,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Piedi negli strap', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 5, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 5,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Evitare le Catapulte', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 7, board: null, sail: null, points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Evitare lo Spin Out', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: null, sail: null, points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         }
     ],
     progressive: 2,
@@ -663,7 +700,8 @@ const intermediateLevel: Level = {
     hasSubItems: true,
     numSubItems: 8,
     numSubItemsCompleted: 0,
-    numSubItemsInProgress: 0
+    numSubItemsInProgress: 0,
+    relativeCompletionPercentage: 0
 };
 
 const advancedLevel: Level = {
@@ -678,7 +716,8 @@ const advancedLevel: Level = {
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Virata Power', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 14, board: null, sail: null, points: 450,
@@ -688,27 +727,31 @@ const advancedLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Rotazione', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 150,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Uscita', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 7, progressive: 3, points: 210,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Power Jibe', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 45, progressive: 15, board: null, sail: null, points: 1350,
@@ -718,27 +761,31 @@ const advancedLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Transizione', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 2, points: 450,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Uscita', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 25, progressive: 3, points: 750,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         },
         {
             id: '', label: 'Chop hop', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 30, progressive: 16, board: null, sail: null, points: 900,
@@ -748,27 +795,31 @@ const advancedLevel: Level = {
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Tempo di permanenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 2, points: 300,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 },
                 {
                     id: '', label: 'Atterraggio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 3, points: 450,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
-                    numSubItemsInProgress: 0
+                    numSubItemsInProgress: 0,
+                    difficulty: 0
                 }
             ],
             hasSubItems: true,
             numSubItems: 3,
             numSubItemsCompleted: 0,
-            numSubItemsInProgress: 0
+            numSubItemsInProgress: 0,
+            difficulty: 0
         }
     ],
     progressive: 3,
@@ -777,7 +828,8 @@ const advancedLevel: Level = {
     hasSubItems: true,
     numSubItems: 4,
     numSubItemsCompleted: 0,
-    numSubItemsInProgress: 0
+    numSubItemsInProgress: 0,
+    relativeCompletionPercentage: 0
 };
 
 const boards:  Board[] = [

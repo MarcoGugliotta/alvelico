@@ -7,7 +7,7 @@ import { Constants } from '@/constants/Strings';
 
 const auth = FIREBASE_AUTH;
 
-export default async function fetchAndSaveCareerData(user: User): Promise<void>{
+async function fetchAndSaveCareerData(user: User): Promise<void>{
     try{
         const careerData = await fetchCareerDataFromFirebase(user.uid);
         await saveCareerDataToStorage(careerData);
@@ -22,13 +22,10 @@ async function fetchCareerDataFromFirebase(userId: string) {
     const careerSnapshot = await getDocs(careerRef);
   
     const levels: Level[] = [];
-  
-    console.log('careerSnapshot.docs',careerSnapshot.docs)
+
     for (const doc of careerSnapshot.docs) {
         const level = doc.data() as Level;
         level.movements = [];
-
-        console.log('livello caricamente')
     
         const movementRef = collection(FIREBASE_DB, Constants.Users, userId, Constants.Career, doc.id, Constants.Movements);
         const movementSnapshot = await getDocs(movementRef);
@@ -72,9 +69,10 @@ async function fetchCareerDataFromFirebase(userId: string) {
 async function saveCareerDataToStorage(careerData: Career) {
   try {
     await AsyncStorage.setItem('careerData', JSON.stringify(careerData));
-    const value = await AsyncStorage.getItem('careerData');
     console.log('Dati della carriera salvati con successo in AsyncStorage.');
   } catch (error) {
     console.error('Errore durante il salvataggio dei dati della carriera in AsyncStorage:', error);
   }
 }
+
+export{ saveCareerDataToStorage }

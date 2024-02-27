@@ -3,19 +3,23 @@ import { Level, Movement, SubMovement, SubSubMovement, User } from "@/models/Mod
 import { collection, CollectionReference, doc, DocumentData, DocumentReference, getDoc, getDocs, Timestamp, updateDoc } from "firebase/firestore";
 import { Constants } from "@/constants/Strings";
 import { getParentDocumentsByRefPath } from "./utils";
+import updateItemInStorage from "./updateItemInStorage";
 
 interface Props {
-    itemRef: DocumentReference<DocumentData, DocumentData>,
+    ref: string,
 }
 
-export default async function activeItem({ itemRef }: Props): Promise<void>  {
+export default async function activeItem({ ref }: Props): Promise<void> {
     try {
-        if (FIREBASE_AUTH.currentUser && itemRef) {
+        if (FIREBASE_AUTH.currentUser && ref) {
             const now = Timestamp.now();
+            const itemRef = doc(FIREBASE_DB, ref);
             const itemData = (await getDoc(itemRef)).data() as Level | Movement | SubMovement | SubSubMovement;
             if (itemData) {
-                const newData = { ...itemData, activationDate: now, status: Constants.InProgress };
+                const newData = { ...itemData, id: itemRef.id, activationDate: now, status: Constants.InProgress };
                 await updateDoc(itemRef, newData);
+
+                updateItemInStorage(newData);
         
                 const documentsRef = await getParentDocumentsByRefPath(itemRef.path);
                 documentsRef.pop();
@@ -24,8 +28,9 @@ export default async function activeItem({ itemRef }: Props): Promise<void>  {
                     const itemParentRef = documentsRef[i];
                     const itemParentData = (await getDoc(itemParentRef)).data()  as Level | Movement | SubMovement | SubSubMovement;
 
-                    const newDataParent = { ...itemParentData, activationDate: now, status: Constants.InProgress};
+                    const newDataParent = { ...itemParentData, id: itemParentRef.id, activationDate: now, status: Constants.InProgress};
                     await updateDoc(itemParentRef, newDataParent);
+                    updateItemInStorage(newData);
                 }
             }
         }
