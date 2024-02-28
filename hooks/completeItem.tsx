@@ -33,7 +33,7 @@ export default async function completeItem({ ref }: Props): Promise<void> {
                 documentsRef.pop();
                 let relativeCompletionPercentage = newData.relativeCompletionPercentage;
         
-
+///users/1HIU38k2rcPzX4VqZu5xLajttk93/career/75wp7S5gtMFtERbCadST/movements/WZMkYVFlXxhlnuVQWrHZ/subMovements/fECElRImcr8YdVkvRYBi/subSubMovements
                 for (let i = documentsRef.length - 1; i >= 0; i--) {
                     const itemParentRef = documentsRef[i];
                     const itemParentData = (await getDoc(itemParentRef)).data()  as Level | Movement | SubMovement | SubSubMovement;
@@ -44,12 +44,26 @@ export default async function completeItem({ ref }: Props): Promise<void> {
                     itemParentData!.completionPercentage += parentNewCompletionPercentage;
 
                     if (Math.abs(itemParentData!.completionPercentage - 100) <= 1) {
-                        const newDataParent = { ...itemParentData, id: itemParentRef.id, completionDate: now, status: Constants.Completed, completionPercentage: 100 };
+                        const addedItem = itemParentData.numSubItemsCompleted! + 1;
+                        const newDataParent = { ...itemParentData, id: itemParentRef.id, completionDate: now, status: Constants.Completed, completionPercentage: 100, numSubItemsCompleted: addedItem };
                         updateItemInStorage(newDataParent);
                         await updateDoc(itemParentRef, newDataParent);
+                        if(documentsRef[i - 1]){
+                            const itemParentParentRef = documentsRef[i - 1];
+                            const itemParentParentData = (await getDoc(itemParentParentRef)).data()  as Level | Movement | SubMovement | SubSubMovement;
+                            const addedParentItem = itemParentParentData.numSubItemsCompleted! + 1;
+                            const newDataParentParent = { ...itemParentParentData, id: itemParentParentRef.id, numSubItemsCompleted: addedParentItem };
+                            updateItemInStorage(newDataParentParent);
+                            await updateDoc(itemParentParentRef, newDataParentParent);
+                        }
                     }else{
-                        const addedItem = itemParentData.numSubItemsCompleted! + 1;
-                        const newDataParent = { ...itemParentData, id: itemParentRef.id, completionPercentage: itemParentData!.completionPercentage, numSubItemsCompleted: addedItem};
+                        let newDataParent = {} as Level | Movement | SubMovement | SubSubMovement | any;
+                        if(i === documentsRef.length - 1){
+                            const addedItem = itemParentData.numSubItemsCompleted! + 1;
+                            newDataParent = { ...itemParentData, id: itemParentRef.id, completionPercentage: itemParentData!.completionPercentage, numSubItemsCompleted: addedItem};
+                        }else{
+                            newDataParent = { ...itemParentData, id: itemParentRef.id, completionPercentage: itemParentData!.completionPercentage};
+                        }
                         updateItemInStorage(newDataParent);
                         await updateDoc(itemParentRef, newDataParent);
                     }

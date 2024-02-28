@@ -16,7 +16,6 @@ export default function TabCarrieraScreen() {
         if (FIREBASE_AUTH.currentUser) {
           let careerData = await fetchLevelsFromStorage(FIREBASE_AUTH.currentUser);
           careerData!.levels.sort((a, b) => a.progressive - b.progressive);
-          console.log(careerData?.levels[2].status);
           setLevels(careerData!.levels);
           setLoading(false);
         } else {

@@ -62,8 +62,11 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
             ...level,
             movements: [],
         };
-
-        careerData.levels.push(levelData);
+                // Aggiungi il livello all'oggetto careerData solo se non è già presente
+        const existingLevelIndex = careerData.levels.findIndex(existingLevel => existingLevel.id === level.id);
+        if (existingLevelIndex === -1) {
+            careerData.levels.push(levelData);
+        }
 
         await updateDoc(doc(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id), {
             ref: levelRef.path
@@ -78,14 +81,14 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
                 completionPercentage: movement.completionPercentage,
                 relativeCompletionPercentage: movement.relativeCompletionPercentage,
                 progressive: movement.progressive,
-                board: movement.board,
-                sail: movement.sail,
+                board: movement.board || {},
+                sail: movement.sail || {},
                 points: movement.points,
                 parentId: level.id,
                 hasSubItems: movement.hasSubItems,
                 numSubItems: movement.numSubItems,
                 numSubItemsCompleted: movement.numSubItemsCompleted,
-                numSubItemsInProgress: movement.numSubItemsInProgress
+                numSubItemsInProgress: movement.numSubItemsInProgress,
             });
             movement.id = movementRef.id;
             movement.ref = movementRef.path;
@@ -95,7 +98,16 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
                 subMovements: [],
             };
 
-            levelData.movements.push(movementData);
+            // Aggiungi il movimento al livello solo se non è già presente
+            const existingMovementIndex = levelData.movements.findIndex(existingMovement => existingMovement.id === movement.id);
+            if (existingMovementIndex === -1) {
+                levelData.movements.push(movementData);
+            }
+
+            // Aggiorna la referenza del movimento nel database
+            await updateDoc(doc(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id, Constants.Movements, movementRef.id), {
+                ref: movementRef.path
+            });
 
             if (movement.subMovements) {
                 await Promise.all(movement.subMovements.map(async (subMovement) => {
@@ -122,7 +134,16 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
                         subSubMovements: [],
                     };
 
-                    movementData.subMovements!.push(subMovementData);
+                    // Aggiungi il sottomovimento al movimento solo se non è già presente
+                    const existingSubMovementIndex = movementData.subMovements!.findIndex(existingSubMovement => existingSubMovement.id === subMovement.id);
+                    if (existingSubMovementIndex === -1) {
+                        movementData.subMovements!.push(subMovementData);
+                    }
+
+                    // Aggiorna la referenza del sottomovimento nel database
+                    await updateDoc(doc(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id, Constants.Movements, movementRef.id, Constants.SubMovements, subMovementRef.id), {
+                        ref: subMovementRef.path
+                    });
 
                     if (subMovement.subSubMovements) {
                         await Promise.all(subMovement.subSubMovements.map(async (subSubMovement) => {
@@ -148,7 +169,16 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
                                 ...subSubMovement,
                             };
 
-                            subMovementData.subSubMovements!.push(subSubMovementData);
+                            // Aggiungi il sottosottomovimento al sottomovimento solo se non è già presente
+                            const existingSubSubMovementIndex = subMovementData.subSubMovements!.findIndex(existingSubSubMovement => existingSubSubMovement.id === subSubMovement.id);
+                            if (existingSubSubMovementIndex === -1) {
+                                subMovementData.subSubMovements!.push(subSubMovementData);
+                            }
+
+                            // Aggiorna la referenza del sottosottomovimento nel database
+                            await updateDoc(doc(FIREBASE_DB, Constants.Users, userId, Constants.Career, levelRef.id, Constants.Movements, movementRef.id, Constants.SubMovements, subMovementRef.id, Constants.SubSubMovements, subSubMovementRef.id), {
+                                ref: subSubMovementRef.path
+                            });
                         }));
                     }
                 }));
@@ -170,7 +200,7 @@ const beginnerLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Nomenclatura tavola e rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, board: null, sail: null, points: 40,
+            id: '', label: 'Nomenclatura tavola e rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, board: undefined, sail: undefined, points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -178,7 +208,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Trasporto del materiale', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, board: null, sail: null, points: 60,
+            id: '', label: 'Trasporto del materiale', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, board: undefined, sail: undefined, points: 60,
             subMovements: [
                 {
                     id: '', label: 'Trasportare il rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 15,
@@ -212,7 +242,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Partenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: null, sail: null, points: 160,
+            id: '', label: 'Partenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: undefined, sail: undefined, points: 160,
             subMovements: [
                 {
                     id: '', label: 'Salire sulla tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 10,
@@ -254,7 +284,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Rotazione della tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: null, sail: null, points: 120,
+            id: '', label: 'Rotazione della tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: undefined, sail: undefined, points: 120,
             subMovements: [
                 {
                     id: '', label: 'Rotazione di prua', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 1, points: 40,
@@ -280,7 +310,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Controllo della velocità', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 9, progressive: 5, board: null, sail: null, points: 90,
+            id: '', label: 'Controllo della velocità', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 9, progressive: 5, board: undefined, sail: undefined, points: 90,
             subMovements: [
                 {
                     id: '', label: 'Accelerare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 20,
@@ -314,7 +344,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 6, board: null, sail: null, points: 100,
+            id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 6, board: undefined, sail: undefined, points: 100,
             subMovements: [
                 {
                     id: '', label: 'Orzare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 40,
@@ -340,7 +370,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Rientrare in situazioni di emergenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 7, board: null, sail: null, points: 40,
+            id: '', label: 'Rientrare in situazioni di emergenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 7, board: undefined, sail: undefined, points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -348,7 +378,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Regole di precedenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: null, sail: null, points: 30,
+            id: '', label: 'Regole di precedenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: undefined, sail: undefined, points: 30,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -356,7 +386,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Teoria del vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 9, board: null, sail: null, points: 60,
+            id: '', label: 'Teoria del vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 9, board: undefined, sail: undefined, points: 60,
             subMovements: [
                 {
                     id: '', label: 'Direzione vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 5,
@@ -390,7 +420,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Andature', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 10, board: null, sail: null, points: 200,
+            id: '', label: 'Andature', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 10, board: undefined, sail: undefined, points: 200,
             subMovements: [
                 {
                     id: '', label: 'Traverso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 20,
@@ -432,7 +462,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Abitudini fondamentali', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 11, board: null, sail: null, points: 60,
+            id: '', label: 'Abitudini fondamentali', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 11, board: undefined, sail: undefined, points: 60,
             subMovements: [
                 {
                     id: '', label: 'Muovere braccia indipendentemente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 20,
@@ -466,7 +496,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Armare la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 12, board: null, sail: null, points: 40,
+            id: '', label: 'Armare la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 12, board: undefined, sail: undefined, points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -492,7 +522,7 @@ const intermediateLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Partenza dalla Spiaggia', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 1, board: null, sail: null, points: 200,
+            id: '', label: 'Partenza dalla Spiaggia', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 1, board: undefined, sail: undefined, points: 200,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -500,7 +530,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Centro velico e centro di deriva', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 2, board: null, sail: null, points: 20,
+            id: '', label: 'Centro velico e centro di deriva', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 2, board: undefined, sail: undefined, points: 20,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -508,7 +538,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Strambata Pivot', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: null, sail: null, points: 320,
+            id: '', label: 'Strambata Pivot', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: undefined, sail: undefined, points: 320,
             subMovements: [
                 {
                     id: '', label: 'Curva sottovento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 1, points: 20,
@@ -550,7 +580,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Virata Veloce', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: null, sail: null, points: 240,
+            id: '', label: 'Virata Veloce', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: undefined, sail: undefined, points: 240,
             subMovements: [
                 {
                     id: '', label: 'Ingresso: curvare sopravento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 40,
@@ -584,7 +614,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Trapezio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 5, board: null, sail: null, points: 300,
+            id: '', label: 'Trapezio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 5, board: undefined, sail: undefined, points: 300,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -592,7 +622,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Planare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 40, progressive: 6, board: null, sail: null, points: 800,
+            id: '', label: 'Planare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 40, progressive: 6, board: undefined, sail: undefined, points: 800,
             subMovements: [
                 {
                     id: '', label: 'Entrare in planata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 1, points: 160,
@@ -678,7 +708,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Evitare le Catapulte', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 7, board: null, sail: null, points: 60,
+            id: '', label: 'Evitare le Catapulte', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 7, board: undefined, sail: undefined, points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -686,7 +716,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Evitare lo Spin Out', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: null, sail: null, points: 60,
+            id: '', label: 'Evitare lo Spin Out', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: undefined, sail: undefined, points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -712,7 +742,7 @@ const advancedLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Partenza dall’acqua', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 13, board: null, sail: null, points: 300,
+            id: '', label: 'Partenza dall’acqua', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 13, board: undefined, sail: undefined, points: 300,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -720,7 +750,7 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Virata Power', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 14, board: null, sail: null, points: 450,
+            id: '', label: 'Virata Power', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 14, board: undefined, sail: undefined, points: 450,
             subMovements: [
                 {
                     id: '', label: 'Entrata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 90,
@@ -754,7 +784,7 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Power Jibe', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 45, progressive: 15, board: null, sail: null, points: 1350,
+            id: '', label: 'Power Jibe', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 45, progressive: 15, board: undefined, sail: undefined, points: 1350,
             subMovements: [
                 {
                     id: '', label: 'Ingresso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,
@@ -788,7 +818,7 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Chop hop', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 30, progressive: 16, board: null, sail: null, points: 900,
+            id: '', label: 'Chop hop', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 30, progressive: 16, board: undefined, sail: undefined, points: 900,
             subMovements: [
                 {
                     id: '', label: 'Take off', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,

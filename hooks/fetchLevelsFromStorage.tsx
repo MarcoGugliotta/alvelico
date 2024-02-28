@@ -11,10 +11,8 @@ export default async function fetchLevelsFromStorage(user: User): Promise<Career
   try {
     const storedData = await AsyncStorage.getItem('careerData');
     if (storedData) {
-      console.log('storedData ok')
       return JSON.parse(storedData) as Career;
     } else {
-      console.log('storedData no')
       const careerData = await fetchCareerDataFromFirebase(user.uid);
       await saveCareerDataToStorage(careerData);
       return careerData;

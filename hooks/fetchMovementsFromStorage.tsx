@@ -7,7 +7,7 @@ import { Constants } from '@/constants/Strings';
 
 const auth = FIREBASE_AUTH;
 
-export default async function fetchMovementsFromStorage(user: User, levelPath: string): Promise<Movement[] | undefined>{
+export default async function fetchMovementsFromStorage(levelPath: string): Promise<Movement[] | undefined>{
   try {
     const storedData = await AsyncStorage.getItem('careerData');
     if (storedData) {
@@ -22,7 +22,6 @@ export default async function fetchMovementsFromStorage(user: User, levelPath: s
             return movements;
         }
     } else {
-      console.log('storedData not-found')
       const movementsData = await fetchMovementsDataFromFirebase(levelPath);
       await saveMovementsDataToStorage(movementsData, levelPath);
       return movementsData;

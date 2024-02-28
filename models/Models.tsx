@@ -1,3 +1,4 @@
+import { Board, Sail } from "@/hooks/generalGeneration";
 import { DocumentData, DocumentReference, Timestamp } from "firebase/firestore";
 
 class Level {
@@ -63,8 +64,8 @@ class Movement {
   numSubItems?: number;
   numSubItemsCompleted?: number;
   numSubItemsInProgress?: number;
-    board: any;
-    sail: any;
+  board?: Board;
+  sail?: Sail;
 
   constructor(
       id?: string,
@@ -84,6 +85,8 @@ class Movement {
       numSubItems?: number,
       numSubItemsCompleted?: number,
       numSubItemsInProgress?: number,
+      board?: Board,
+      sail?: Sail
   ) {
       this.id = id;
       this.label = label || '';
@@ -102,6 +105,8 @@ class Movement {
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;
       this.numSubItemsInProgress = numSubItemsInProgress;
+      this.board = board || undefined;
+      this.sail = sail || undefined;
   }
 }
 
