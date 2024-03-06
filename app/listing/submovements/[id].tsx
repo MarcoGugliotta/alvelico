@@ -55,6 +55,7 @@ const Pages = () => {
                 type: 'subsubmovements',
                 hrefPath: 'subsubmovements',
                 itemRefPath: item.ref!,
+                onOpenBottomSheet: () => {}
               }}
             />
           )}

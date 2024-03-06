@@ -16,6 +16,7 @@ interface Props {
     type: string,
     hrefPath: string | undefined,
     itemRefPath: string,
+    onOpenBottomSheet: (item: Movement | null) => void
   };
 }
 
@@ -24,6 +25,8 @@ const CareerItem = ({ prop }: Props) => {
   const [isCheckedInProg, setIsCheckedInProg] = useState(false);
   const [loading, setLoading] = useState(false);
   const [item, setItem] = useState<Level | Movement | SubMovement | SubSubMovement | null>(null);
+  const [board, setBoard] = useState<string | null>(null);
+  const [sail, setSail] = useState<string | null>(null);
 
   let subItemsLabel = "Sequenze";
   if (prop.type === 'movements') {
@@ -40,6 +43,12 @@ const CareerItem = ({ prop }: Props) => {
         const itemData = snapshot.data() as Level | Movement | SubMovement | SubSubMovement;
         itemData!.id = snapshot.id;
         setItem(itemData);
+        if(prop.type === "submovements"){
+          const movement = itemData as Movement;
+          setBoard(movement.board!);
+          setSail(movement.sail!);
+        }
+
       });
 
       return () => unsubscribe();
@@ -51,9 +60,10 @@ const CareerItem = ({ prop }: Props) => {
     setIsCheckedComplete(!isCheckedComplete);
   };
 
-  const toggleCheckInProg = async () => {
-    await activeItem({ ref: prop.itemRefPath})
-    setIsCheckedInProg(!isCheckedInProg);
+  const toggleCheckInProg = async (item: Level | Movement | SubMovement | SubSubMovement) => {
+    //await activeItem({ ref: prop.itemRefPath})
+    //setIsCheckedInProg(!isCheckedInProg);
+    prop.onOpenBottomSheet(item as Movement);
   };
 
   return (
@@ -71,6 +81,12 @@ const CareerItem = ({ prop }: Props) => {
                         <Text>{subItemsLabel} completate: {item.numSubItemsCompleted}/{item.numSubItems}</Text>
                         <Text>Punti: {item!.points}</Text>
                         <Text style={{color: 'red'}}>{item!.status}</Text>
+                        {prop.type === "submovements" && (
+                          <>
+                          <Text>Tavola: {board}</Text>
+                          <Text>Vela: {sail}</Text>
+                          </>
+                        )}
                         {/*<Text>- {subItemsLabel} in progress: {countInProgressItems(itemsCloned)}/{itemsCloned.length}</Text>*/}
                     </View>
                     <View style={{backgroundColor: 'yellow'}}>
@@ -87,6 +103,12 @@ const CareerItem = ({ prop }: Props) => {
                         <Text>Completamento: {item!.completionDate ? formatTimestampToString(item!.completionDate) : '--/--/----'}</Text>
                         <Text>Punti: {item!.points}</Text>
                         <Text style={{color: 'red'}}>{item!.status}</Text>
+                        {prop.type === "submovements" && (
+                          <>
+                          <Text>Tavola: {board}</Text>
+                          <Text>Vela: {sail}</Text>
+                          </>
+                        )}
                     </View>
                     <View style={{backgroundColor: 'yellow', gap:20}}>
                         <Text>Completa</Text>
@@ -98,7 +120,7 @@ const CareerItem = ({ prop }: Props) => {
                             )}
                         </TouchableOpacity>
                         <Text>Attiva</Text>
-                        <TouchableOpacity disabled={item!.status === Constants.InProgress || item!.status === Constants.Completed} onPress={toggleCheckInProg}>
+                        <TouchableOpacity disabled={item!.status === Constants.InProgress || item!.status === Constants.Completed} onPress={() => toggleCheckInProg(item!)}>
                             {isCheckedInProg || item!.status === Constants.InProgress || item!.status === Constants.Completed ? (
                                 <AntDesign name="checkcircle" size={24} color="grey" />
                             ) : (

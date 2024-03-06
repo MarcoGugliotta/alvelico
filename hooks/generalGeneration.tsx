@@ -1,23 +1,12 @@
 import { Constants } from "@/constants/Strings";
 import { FIREBASE_DB } from "@/firebaseConfig";
+import { Board, Sail } from "@/models/Models";
 import { addDoc, collection } from "firebase/firestore";
-
-
-interface Board {
-    id: string;
-    literage: number;
-    points: number
-}
-
-interface Sail {
-    id: string;
-    label: string;
-    points: number
-}
 
 const addBoards = async (boards: Board[]) => {
     boards.forEach(async (board) => {
         await addDoc(collection(FIREBASE_DB, Constants.Boards), {
+            id: board.id,
             literage: board.literage,
             points: board.points,
         });
@@ -27,10 +16,11 @@ const addBoards = async (boards: Board[]) => {
 const addSails = async (sails: Sail[]) => {
     sails.forEach(async (sail) => {
         await addDoc(collection(FIREBASE_DB, Constants.Sails), {
+            id: sail.id,
             label: sail.label,
             points: sail.points,
         });
     });
 }
 
-export {addBoards, addSails, Board, Sail};
+export { addBoards, addSails, Board, Sail };

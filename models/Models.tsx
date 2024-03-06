@@ -1,4 +1,3 @@
-import { Board, Sail } from "@/hooks/generalGeneration";
 import { DocumentData, DocumentReference, Timestamp } from "firebase/firestore";
 
 class Level {
@@ -64,8 +63,8 @@ class Movement {
   numSubItems?: number;
   numSubItemsCompleted?: number;
   numSubItemsInProgress?: number;
-  board?: Board;
-  sail?: Sail;
+  board?: string;
+  sail?: string;
 
   constructor(
       id?: string,
@@ -85,8 +84,8 @@ class Movement {
       numSubItems?: number,
       numSubItemsCompleted?: number,
       numSubItemsInProgress?: number,
-      board?: Board,
-      sail?: Sail
+      board?: string,
+      sail?: string
   ) {
       this.id = id;
       this.label = label || '';
@@ -105,8 +104,8 @@ class Movement {
       this.numSubItems = numSubItems;
       this.numSubItemsCompleted = numSubItemsCompleted;
       this.numSubItemsInProgress = numSubItemsInProgress;
-      this.board = board || undefined;
-      this.sail = sail || undefined;
+      this.board = board || '';
+      this.sail = sail || '';
   }
 }
 
@@ -262,4 +261,38 @@ class Career {
   }
 }
 
-export { Level, Movement, SubMovement, SubSubMovement, User, Career };
+class Board {
+  id?: number;
+  literage: number;
+  points: number;
+
+  constructor(
+    id?: number,
+    literage?: number,
+    points?: number,
+
+  ) {
+      this.id = id;
+      this.literage = literage || 0;
+      this.points = points || 0;
+  }
+}
+
+class Sail {
+  id?: number;
+  label: string;
+  points: number;
+
+  constructor(
+    id: number,
+    label?: string,
+    points?: number,
+
+  ) {
+      this.id = id;
+      this.label = label || '';
+      this.points = points || 0;
+  }
+}
+
+export { Level, Movement, SubMovement, SubSubMovement, User, Career, Board, Sail };

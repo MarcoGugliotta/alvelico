@@ -33,7 +33,6 @@ export default async function completeItem({ ref }: Props): Promise<void> {
                 documentsRef.pop();
                 let relativeCompletionPercentage = newData.relativeCompletionPercentage;
         
-///users/1HIU38k2rcPzX4VqZu5xLajttk93/career/75wp7S5gtMFtERbCadST/movements/WZMkYVFlXxhlnuVQWrHZ/subMovements/fECElRImcr8YdVkvRYBi/subSubMovements
                 for (let i = documentsRef.length - 1; i >= 0; i--) {
                     const itemParentRef = documentsRef[i];
                     const itemParentData = (await getDoc(itemParentRef)).data()  as Level | Movement | SubMovement | SubSubMovement;

@@ -29,6 +29,13 @@ export const defaultStyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    btnDisabled:{
+        backgroundColor: 'grey',
+        height: 50,
+        borderRadius:8,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     btnText: {
         color: '#fff',
         fontSize: 16,
