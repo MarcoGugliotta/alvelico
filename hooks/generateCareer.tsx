@@ -19,7 +19,7 @@ export default async function generateCareer(user: User, name: string, lastname:
         };
 
         await setDoc(doc(FIREBASE_DB, Constants.Users, userId), {
-            userName: 'Guglio89',
+            userName: '',
             name: name,
             lastname: lastname,
             email: user.email,
@@ -48,6 +48,7 @@ const addLevels = async (userId: string, level: Level, careerData: Career) => {
     try{
         const levelRef = await addDoc(collection(FIREBASE_DB, Constants.Users, userId, Constants.Career), {
             label: level.label,
+            status: level.status,
             activationDate: level.activationDate,
             completionDate: level.completionDate,
             completionPercentage: level.completionPercentage,
@@ -203,7 +204,7 @@ const beginnerLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Nomenclatura tavola e rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, board: '', sail: '', points: 40,
+            id: '', label: 'Nomenclatura tavola e rig', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, board: '', sail: '', points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -211,10 +212,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Trasporto del materiale', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, board: '', sail: '', points: 60,
+            id: '', label: 'Trasporto del materiale', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, board: '', sail: '', points: 60,
             subMovements: [
                 {
-                    id: '', label: 'Trasportare il rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 15,
+                    id: '', label: 'Trasportare il rig', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 15,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -222,7 +223,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Trasportare tavola e rig', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 40,
+                    id: '', label: 'Trasportare tavola e rig', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -230,7 +231,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Appoggiare il materiale per terra', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 5,
+                    id: '', label: 'Appoggiare il materiale per terra', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 5,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -245,10 +246,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Partenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: '', sail: '', points: 160,
+            id: '', label: 'Partenza', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: '', sail: '', points: 160,
             subMovements: [
                 {
-                    id: '', label: 'Salire sulla tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 10,
+                    id: '', label: 'Salire sulla tavola', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 10,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -256,7 +257,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Posizione a T', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 30,
+                    id: '', label: 'Posizione a T', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 30,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -264,7 +265,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Posizione base', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 50,
+                    id: '', label: 'Posizione base', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 50,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -272,7 +273,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Posizione d’andatura', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 4, points: 70,
+                    id: '', label: 'Posizione d’andatura', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 4, points: 70,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -287,10 +288,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Rotazione della tavola', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: '', sail: '', points: 120,
+            id: '', label: 'Rotazione della tavola', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: '', sail: '', points: 120,
             subMovements: [
                 {
-                    id: '', label: 'Rotazione di prua', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 1, points: 40,
+                    id: '', label: 'Rotazione di prua', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 1, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -298,7 +299,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Rotazione di poppa', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, points: 80,
+                    id: '', label: 'Rotazione di poppa', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 2, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -313,10 +314,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Controllo della velocità', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 9, progressive: 5, board: '', sail: '', points: 90,
+            id: '', label: 'Controllo della velocità', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 9, progressive: 5, board: '', sail: '', points: 90,
             subMovements: [
                 {
-                    id: '', label: 'Accelerare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 20,
+                    id: '', label: 'Accelerare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -324,7 +325,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Decelerare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 20,
+                    id: '', label: 'Decelerare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -332,7 +333,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Frenare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 3, points: 50,
+                    id: '', label: 'Frenare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 3, points: 50,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -347,10 +348,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 6, board: '', sail: '', points: 100,
+            id: '', label: 'Curvare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 6, board: '', sail: '', points: 100,
             subMovements: [
                 {
-                    id: '', label: 'Orzare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 40,
+                    id: '', label: 'Orzare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -358,7 +359,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Puggiare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 60,
+                    id: '', label: 'Puggiare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -373,7 +374,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Rientrare in situazioni di emergenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 7, board: '', sail: '', points: 40,
+            id: '', label: 'Rientrare in situazioni di emergenza', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 7, board: '', sail: '', points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -381,7 +382,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Regole di precedenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: '', sail: '', points: 30,
+            id: '', label: 'Regole di precedenza', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: '', sail: '', points: 30,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -389,10 +390,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Teoria del vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 9, board: '', sail: '', points: 60,
+            id: '', label: 'Teoria del vento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 9, board: '', sail: '', points: 60,
             subMovements: [
                 {
-                    id: '', label: 'Direzione vento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 5,
+                    id: '', label: 'Direzione vento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 5,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -400,7 +401,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Orientarsi correttamente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 15,
+                    id: '', label: 'Orientarsi correttamente', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 15,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -408,7 +409,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Vento apparente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 40,
+                    id: '', label: 'Vento apparente', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -423,10 +424,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Andature', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 10, board: '', sail: '', points: 200,
+            id: '', label: 'Andature', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 10, board: '', sail: '', points: 200,
             subMovements: [
                 {
-                    id: '', label: 'Traverso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 20,
+                    id: '', label: 'Traverso', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -434,7 +435,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Bolina', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 100,
+                    id: '', label: 'Bolina', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 100,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -442,7 +443,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Lasco', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 3, points: 20,
+                    id: '', label: 'Lasco', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 3, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -450,7 +451,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Poppa', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 4, points: 60,
+                    id: '', label: 'Poppa', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 4, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -465,10 +466,10 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Abitudini fondamentali', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 11, board: '', sail: '', points: 60,
+            id: '', label: 'Abitudini fondamentali', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 11, board: '', sail: '', points: 60,
             subMovements: [
                 {
-                    id: '', label: 'Muovere braccia indipendentemente', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 20,
+                    id: '', label: 'Muovere braccia indipendentemente', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -476,7 +477,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Salvataggio appeso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 20,
+                    id: '', label: 'Salvataggio appeso', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -484,7 +485,7 @@ const beginnerLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Salvataggio del tennista', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 20,
+                    id: '', label: 'Salvataggio del tennista', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 3, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -499,7 +500,7 @@ const beginnerLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Armare la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 12, board: '', sail: '', points: 40,
+            id: '', label: 'Armare la vela', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 12, board: '', sail: '', points: 40,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -509,7 +510,7 @@ const beginnerLevel: Level = {
     ],
     progressive: 1,
     points: 1000,
-    status: 'not_active',
+    status: Constants.NotActive,
     hasSubItems: true,
     numSubItems: 12,
     numSubItemsCompleted: 0,
@@ -525,7 +526,7 @@ const intermediateLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Partenza dalla Spiaggia', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 1, board: '', sail: '', points: 200,
+            id: '', label: 'Partenza dalla Spiaggia', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 1, board: '', sail: '', points: 200,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -533,7 +534,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Centro velico e centro di deriva', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 2, board: '', sail: '', points: 20,
+            id: '', label: 'Centro velico e centro di deriva', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 2, board: '', sail: '', points: 20,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -541,10 +542,10 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Strambata Pivot', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: '', sail: '', points: 320,
+            id: '', label: 'Strambata Pivot', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 3, board: '', sail: '', points: 320,
             subMovements: [
                 {
-                    id: '', label: 'Curva sottovento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 1, points: 20,
+                    id: '', label: 'Curva sottovento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 1, points: 20,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -552,7 +553,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Gira i piedi', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 60,
+                    id: '', label: 'Gira i piedi', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 2, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -560,7 +561,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Gira la vela', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 80,
+                    id: '', label: 'Gira la vela', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -568,7 +569,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Curva sopravento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
+                    id: '', label: 'Curva sopravento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -583,10 +584,10 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Virata Veloce', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: '', sail: '', points: 240,
+            id: '', label: 'Virata Veloce', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 12, progressive: 4, board: '', sail: '', points: 240,
             subMovements: [
                 {
-                    id: '', label: 'Ingresso: curvare sopravento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 40,
+                    id: '', label: 'Ingresso: curvare sopravento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 1, points: 40,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -594,7 +595,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Passaggio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
+                    id: '', label: 'Passaggio', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -602,7 +603,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Uscita: curvare sottovento', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 3, points: 120,
+                    id: '', label: 'Uscita: curvare sottovento', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 6, progressive: 3, points: 120,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -617,7 +618,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Trapezio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 5, board: '', sail: '', points: 300,
+            id: '', label: 'Trapezio', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 5, board: '', sail: '', points: 300,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -625,10 +626,10 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Planare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 40, progressive: 6, board: '', sail: '', points: 800,
+            id: '', label: 'Planare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 40, progressive: 6, board: '', sail: '', points: 800,
             subMovements: [
                 {
-                    id: '', label: 'Entrare in planata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 1, points: 160,
+                    id: '', label: 'Entrare in planata', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 1, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -636,7 +637,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Mantenere la planata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 2, points: 160,
+                    id: '', label: 'Mantenere la planata', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 2, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -644,10 +645,10 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Pompare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 3, points: 160,
+                    id: '', label: 'Pompare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 3, points: 160,
                     subSubMovements: [
                         {
-                            id: '', label: 'Pompare agganciati al trapezio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 80,
+                            id: '', label: 'Pompare agganciati al trapezio', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
@@ -655,7 +656,7 @@ const intermediateLevel: Level = {
                             difficulty: 0
                         },
                         {
-                            id: '', label: 'Pompa e saltella', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
+                            id: '', label: 'Pompa e saltella', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
@@ -670,10 +671,10 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Curvare', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
+                    id: '', label: 'Curvare', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 4, points: 160,
                     subSubMovements: [
                         {
-                            id: '', label: 'Carving', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 80,
+                            id: '', label: 'Carving', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 1, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
@@ -681,7 +682,7 @@ const intermediateLevel: Level = {
                             difficulty: 0
                         },
                         {
-                            id: '', label: 'Girare con imbardata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
+                            id: '', label: 'Girare con imbardata', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 2, points: 80,
                             hasSubItems: false,
                             numSubItems: 0,
                             numSubItemsCompleted: 0,
@@ -696,7 +697,7 @@ const intermediateLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Piedi negli strap', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 5, points: 160,
+                    id: '', label: 'Piedi negli strap', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 8, progressive: 5, points: 160,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -711,7 +712,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Evitare le Catapulte', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 7, board: '', sail: '', points: 60,
+            id: '', label: 'Evitare le Catapulte', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 7, board: '', sail: '', points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -719,7 +720,7 @@ const intermediateLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Evitare lo Spin Out', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: '', sail: '', points: 60,
+            id: '', label: 'Evitare lo Spin Out', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 8, board: '', sail: '', points: 60,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -729,7 +730,7 @@ const intermediateLevel: Level = {
     ],
     progressive: 2,
     points: 2000,
-    status: 'not_active',
+    status: Constants.NotActive,
     hasSubItems: true,
     numSubItems: 8,
     numSubItemsCompleted: 0,
@@ -745,7 +746,7 @@ const advancedLevel: Level = {
     completionPercentage: 0,
     movements: [
         {
-            id: '', label: 'Partenza dall’acqua', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 13, board: '', sail: '', points: 300,
+            id: '', label: 'Partenza dall’acqua', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 13, board: '', sail: '', points: 300,
             hasSubItems: false,
             numSubItems: 0,
             numSubItemsCompleted: 0,
@@ -753,10 +754,10 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Virata Power', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 14, board: '', sail: '', points: 450,
+            id: '', label: 'Virata Power', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 14, board: '', sail: '', points: 450,
             subMovements: [
                 {
-                    id: '', label: 'Entrata', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 90,
+                    id: '', label: 'Entrata', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 3, progressive: 1, points: 90,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -764,7 +765,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Rotazione', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 150,
+                    id: '', label: 'Rotazione', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 2, points: 150,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -772,7 +773,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Uscita', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 7, progressive: 3, points: 210,
+                    id: '', label: 'Uscita', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 7, progressive: 3, points: 210,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -787,10 +788,10 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Power Jibe', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 45, progressive: 15, board: '', sail: '', points: 1350,
+            id: '', label: 'Power Jibe', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 45, progressive: 15, board: '', sail: '', points: 1350,
             subMovements: [
                 {
-                    id: '', label: 'Ingresso', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,
+                    id: '', label: 'Ingresso', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -798,7 +799,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Transizione', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 2, points: 450,
+                    id: '', label: 'Transizione', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 2, points: 450,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -806,7 +807,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Uscita', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 25, progressive: 3, points: 750,
+                    id: '', label: 'Uscita', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 25, progressive: 3, points: 750,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -821,10 +822,10 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Chop hop', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 30, progressive: 16, board: '', sail: '', points: 900,
+            id: '', label: 'Chop hop', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 30, progressive: 16, board: '', sail: '', points: 900,
             subMovements: [
                 {
-                    id: '', label: 'Take off', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,
+                    id: '', label: 'Take off', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 5, progressive: 1, points: 150,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -832,7 +833,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Tempo di permanenza', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 2, points: 300,
+                    id: '', label: 'Tempo di permanenza', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 10, progressive: 2, points: 300,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -840,7 +841,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Atterraggio', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 3, points: 450,
+                    id: '', label: 'Atterraggio', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 15, progressive: 3, points: 450,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -855,10 +856,10 @@ const advancedLevel: Level = {
             difficulty: 0
         },
         {
-            id: '', label: 'Light Wind Freestyle', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 75, progressive: 17, board: '', sail: '', points: 1200,
+            id: '', label: 'Light Wind Freestyle', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 75, progressive: 17, board: '', sail: '', points: 1200,
             subMovements: [
                 {
-                    id: '', label: 'Backsailing', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 1, points: 60,
+                    id: '', label: 'Backsailing', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 1, progressive: 1, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -866,7 +867,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Bugna in avanti', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 60,
+                    id: '', label: 'Bugna in avanti', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 2, progressive: 2, points: 60,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -874,7 +875,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Pinna in avanti', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 120,
+                    id: '', label: 'Pinna in avanti', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 4, progressive: 3, points: 120,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -882,7 +883,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Heli tack', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 7, progressive: 4, points: 180,
+                    id: '', label: 'Heli tack', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 7, progressive: 4, points: 180,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -890,7 +891,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Upwind 360', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 11, progressive: 5, points: 240,
+                    id: '', label: 'Upwind 360', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 11, progressive: 5, points: 240,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -898,7 +899,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Downwind 360', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 6, points: 300,
+                    id: '', label: 'Downwind 360', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 16, progressive: 6, points: 300,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -906,7 +907,7 @@ const advancedLevel: Level = {
                     difficulty: 0
                 },
                 {
-                    id: '', label: 'Sailbody 360', status: 'not_active', activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 7, points: 240,
+                    id: '', label: 'Sailbody 360', status: Constants.NotActive, activationDate: null, completionDate: null, completionPercentage: 0, relativeCompletionPercentage: 20, progressive: 7, points: 240,
                     hasSubItems: false,
                     numSubItems: 0,
                     numSubItemsCompleted: 0,
@@ -923,9 +924,9 @@ const advancedLevel: Level = {
     ],
     progressive: 3,
     points: 3000,
-    status: 'not_active',
+    status: Constants.NotActive,
     hasSubItems: true,
-    numSubItems: 4,
+    numSubItems: 5,
     numSubItemsCompleted: 0,
     numSubItemsInProgress: 0,
     relativeCompletionPercentage: 0

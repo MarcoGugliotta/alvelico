@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, FlatList } from 'react-native';
+import { Text, FlatList, View, ImageBackground, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
 import { FIREBASE_AUTH } from '@/firebaseConfig';
@@ -9,18 +9,19 @@ import { ActivityIndicator } from 'react-native-paper';
 import BottomSheetCustom from '@/components/BottomSheet';
 import BottomSheet from '@gorhom/bottom-sheet';
 import saveBoardAndSailSelection from '@/hooks/saveBoardAndSailSelection';
+import { StatusBar } from 'expo-status-bar';
+import { theme } from '@/theme/theme';
 
 const Pages = () => {
-  const { item } = useLocalSearchParams<{ item: string }>();
+  const { item, itemLabel } = useLocalSearchParams<{ item: string , itemLabel: string}>();
   const [movements, setMovements] = useState<Movement[] | null>(null);
   const [movementSelected, setMovementSelected] = useState<Movement | null>(null)
   const [loading, setLoading] = useState(false);
   const [isOpenBottomSheet, setIsOpenBottomSheet] = useState(false)
 
-  const parsedItem = JSON.parse(item) as Level;
-
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  console.log(itemLabel)
   useEffect(() => {
     const fetchLevelData = async () => {
       try {
@@ -56,34 +57,69 @@ const Pages = () => {
 
   return (
     <>
+    <ImageBackground source={require('@/assets/bg_default.png')} style={styles.image}>
       {loading ? (
         <ActivityIndicator size="large" color="blue" />
       ) : (
         <>
-          <FlatList
-            data={movements}
-            keyExtractor={(item, index) => index.toString()}
-            ListHeaderComponent={
-              <Text style={{fontSize:24, fontWeight:'bold', marginBottom: 30, marginTop: 10}}>Movimenti per il livello {parsedItem.label}</Text>
-            }
-            ListEmptyComponent={<Text>Nessun movimento trovato.</Text>}
-            renderItem={({ item }) => (
-              <CareerItem
-                prop={{
-                  type: 'submovements',
-                  hrefPath: 'submovements',
-                  itemRefPath: item.ref!,
-                  onOpenBottomSheet: handleOpenBottomSheet
-                }}
-              />
-            )}
-          />
+          <StatusBar style='dark'></StatusBar>
+            <FlatList
+              data={movements}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={<Text>Nessun movimento trovato.</Text>}
+              ListHeaderComponent={
+                <View style={styles.headerContainer}>
+                  <Text style={styles.headerPt1}>Livello:  </Text>
+                  <Text style={styles.headerPt2}>{itemLabel}</Text>
+                </View>
+              }
+              renderItem={({ item }) => (
+                <CareerItem
+                  prop={{
+                    type: 'submovements',
+                    hrefPath: 'submovements',
+                    itemRefPath: item.ref!,
+                    onOpenBottomSheet: handleOpenBottomSheet
+                  }}
+                />
+                )}
+                />
           {isOpenBottomSheet ? (<BottomSheetCustom  onItemsSelected={handleBoardsAndSailsSelection} ref={bottomSheetRef} movement={movementSelected!}></BottomSheetCustom>) : undefined}
         </>
       )}
+      </ImageBackground>
     </>
   );
   
 }
 
 export default Pages;
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    flex:1,
+    alignItems:'center',
+    marginTop: 32,
+    marginBottom: 10,
+    marginHorizontal:20,
+    flexDirection:'row',
+  },
+  headerPt1: {
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily:'rale-b',
+    color: theme.colors.primary,
+  },
+  headerPt2: {
+    fontSize: 18,
+    textAlign: 'center',
+    fontFamily:'rale-b',
+    color: theme.colors.primary,
+    textTransform: 'uppercase'
+  },
+  image: {
+    flex: 1,
+    justifyContent:'center',
+    resizeMode:'contain'
+  }
+})

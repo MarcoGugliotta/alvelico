@@ -10,5 +10,8 @@ export const theme = {
     accent: '#F49A54',
     error: '#f13a59',
     surface: '#FDFFFF',
+    completed: '#1CD5C6',
+    notactive: '#797979',
+    statusInprogress: '#BDE0FF'
   },
 }

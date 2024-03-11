@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { theme } from '@/theme/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 export default function TabLayout() {
   return (
@@ -11,7 +12,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: theme.colors.accent,
         tabBarLabelStyle: {
           fontFamily: "rale-sb"
-        }
+        },
       }}>
       <Tabs.Screen
         name="index"
@@ -23,7 +24,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="carriera"
         options={{
-          title: 'Carriera',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="trophy" size={size} color={color} />,
         }}
       />

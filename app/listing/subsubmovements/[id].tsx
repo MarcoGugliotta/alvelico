@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { View, Text, ScrollView, FlatList, StyleSheet, ImageBackground } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Level, Movement, SubMovement, SubSubMovement } from '@/models/Models';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
@@ -39,6 +39,7 @@ const Pages = () => {
 
   return (
     <>
+    <ImageBackground source={require('@/assets/bg_default.png')} style={styles.image}>
     {loading ? (
       <ActivityIndicator size="large" color="blue" />
     ) : (
@@ -61,9 +62,18 @@ const Pages = () => {
           )}
         />
       )}
+      </ImageBackground>
     </>
   );
   
 }
 
 export default Pages;
+
+const styles = StyleSheet.create({
+  image: {
+    flex: 1,
+    justifyContent:'center',
+    resizeMode:'contain'
+  }
+})

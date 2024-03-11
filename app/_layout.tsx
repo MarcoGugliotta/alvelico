@@ -1,9 +1,11 @@
 import { FIREBASE_AUTH } from '@/firebaseConfig';
+import { theme } from '@/theme/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack, useRouter } from 'expo-router';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { useState, useEffect, useCallback } from 'react';
+import { StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export const unstable_settings = {
@@ -68,14 +70,38 @@ function RootLayoutNav(){
         ),
       }}/>
       <Stack.Screen name="listing/movements/[id]" options={{
-        headerTitle: 'Movimenti'
+        headerTitleStyle: styles.headerStyle,
+        headerTitle: 'Movimenti',
+        headerBackTitleVisible: false,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons style={styles.headerBackStyle} name="chevron-back" />
+          </TouchableOpacity>
+        ),
       }}/>
       <Stack.Screen name="listing/submovements/[id]" options={{
-        headerTitle: 'Sequenze'
+        headerTitleStyle: styles.headerStyle,
+        headerTitle: 'Sequenze',
+        headerBackTitleVisible: false
       }}/>
       <Stack.Screen name="listing/subsubmovements/[id]" options={{
-        headerTitle: 'Sotto Sequenze'
+        headerTitleStyle: styles.headerStyle,
+        headerTitle: 'Sotto Sequenze',
+        headerBackTitleVisible: false
       }}/>
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  headerStyle: {
+    fontFamily:'rale-b',
+    fontSize:24,
+    color: theme.colors.primary
+  },
+  headerBackStyle: {
+    fontFamily:'rale-b',
+    fontSize:30,
+    color: theme.colors.primary
+  }
+})

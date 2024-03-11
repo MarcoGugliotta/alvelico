@@ -73,6 +73,15 @@ const Page = () => {
             style={[defaultStyles.inputField, { marginVertical: 10 }]}
         />
         <TextInput
+            placeholder='Nome'
+            returnKeyType="next"
+            value={name.value}
+            onChangeText={(text: string) => setName({ value: text, error: '' })}
+            autoCapitalize="words"
+            keyboardType="default"
+            style={[defaultStyles.inputField, { marginVertical: 10 }]}
+        />
+        <TextInput
             placeholder='Cognome'
             returnKeyType="next"
             value={lastname.value}
@@ -105,7 +114,7 @@ const Page = () => {
             <Text style={defaultStyles.btnText}>Continua</Text>
         </TouchableOpacity>
 
-        <View style={styles.separatorView}>
+        {/*<View style={styles.separatorView}>
             <View style={{
                 flex:1,
                 borderBottomColor:'#000',
@@ -132,7 +141,7 @@ const Page = () => {
 
         <TouchableOpacity style={{marginVertical:10}} onPress={logout}>
             <Text >logout</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
     </View>
     );
 };

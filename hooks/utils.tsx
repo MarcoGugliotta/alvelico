@@ -1,5 +1,7 @@
+import { Constants } from "@/constants/Strings";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { Level, Movement, SubMovement, SubSubMovement } from "@/models/Models";
+import { theme } from "@/theme/theme";
 import { DocumentData, DocumentReference, DocumentSnapshot, Timestamp, doc, getDoc } from "firebase/firestore";
 
 const formatTimestampToString = function (timestamp: Timestamp): string {
@@ -28,4 +30,47 @@ const getParentDocumentsByRefPath = async (path: string): Promise<DocumentRefere
     return documentRefs;
 }
 
-export { formatTimestampToString, countCompletedItems, countInProgressItems, getParentDocumentsByRefPath };
+const getItemBorderColor = (itemStatus: string) => {
+    switch (itemStatus) {
+      case Constants.Completed:
+        return theme.colors.completed;
+      case Constants.InProgress:
+        return theme.colors.accent;
+      case Constants.NotActive:
+        return theme.colors.notactive;
+      default:
+        return theme.colors.notactive;
+    }
+  };
+
+  const getBgStatusColor = (itemStatus: string) => {
+    switch (itemStatus) {
+      case Constants.Completed:
+        return theme.colors.completed;
+      case Constants.InProgress:
+        return theme.colors.accent;
+      case Constants.NotActive:
+        return theme.colors.notactive;
+      default:
+        return theme.colors.notactive;
+    }
+  };
+
+  const getLabelStatus = (itemStatus: string) => {
+    switch (itemStatus) {
+      case Constants.Completed:
+        return 'COMPLETATO';
+      case Constants.InProgress:
+        return 'IN CORSO';
+    }
+  };
+
+export { 
+    formatTimestampToString, 
+    countCompletedItems, 
+    countInProgressItems, 
+    getParentDocumentsByRefPath, 
+    getItemBorderColor,
+    getBgStatusColor,
+    getLabelStatus 
+};
